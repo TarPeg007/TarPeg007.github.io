@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Saad Fellahi — tarpeg007 | Penetration Tester &amp; Offensive Security Researcher</title>
+<meta name="description" content="Saad Fellahi (tarpeg007) — penetration tester and offensive security researcher. 6 CVE credits in JS frameworks, CVSS 9.1 critical on HackerOne, HTB CPTS &amp; CBBH certified.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ======= PRELOADER ======= -->
+<div class="preloader" id="preloader">
+  <div class="pre-inner">
+    <div class="pre-terminal">
+      <span class="pre-line">$ whoami</span>
+      <span class="pre-line pre-dim">> tarpeg007</span>
+      <span class="pre-line">$ ./init --target portfolio</span>
+      <span class="pre-line pre-dim">> access granted<span class="blink">▊</span></span>
+    </div>
+    <div class="pre-bar"><span id="preBarFill"></span></div>
+  </div>
+</div>
+
+<!-- ======= NOISE GRAIN OVERLAY ======= -->
+<div class="grain" aria-hidden="true"></div>
+
+<!-- ======= CUSTOM CURSOR ======= -->
+<div class="cursor-dot" id="cursorDot" aria-hidden="true"></div>
+<div class="cursor-ring" id="cursorRing" aria-hidden="true"></div>
+
+<!-- ======= NAVIGATION ======= -->
+<header class="nav" id="nav">
+  <a class="nav-logo" href="#hero">
+    <span class="logo-bracket">[</span>TarPeg<span class="logo-num">007</span><span class="logo-bracket">]</span>
+  </a>
+  <nav class="nav-links" id="navLinks">
+    <a href="#hero" class="nav-link active" data-section="hero">home</a>
+    <a href="#about" class="nav-link" data-section="about">about</a>
+    <a href="#cves" class="nav-link" data-section="cves">cves</a>
+    <a href="#bounties" class="nav-link" data-section="bounties">bounties</a>
+    <a href="#arsenal" class="nav-link" data-section="arsenal">arsenal</a>
+    <a href="#experience" class="nav-link" data-section="experience">experience</a>
+    <a href="#contact" class="nav-link" data-section="contact">contact</a>
+  </nav>
+  <a class="nav-cta" href="#contact">
+    <span>hire_me.sh</span>
+  </a>
+  <button class="nav-burger" id="navBurger" aria-label="menu">
+    <span></span><span></span>
+  </button>
+</header>
+
+<main>
+
+<!-- ======= HERO ======= -->
+<section class="hero" id="hero">
+  <div class="hero-bg" aria-hidden="true"></div>
+
+  <div class="hero-visual" id="heroVisual">
+    <canvas id="particleCanvas" aria-hidden="true"></canvas>
+    <div class="hero-img-wrap">
+      <img id="heroImg" src="assets/composite_4k.jpg" fetchpriority="high" decoding="async" alt="Marshall D. Teach — the darkness persona of tarpeg007" />
+    </div>
+    <div class="hero-ring ring-1" aria-hidden="true"></div>
+    <div class="hero-ring ring-2" aria-hidden="true"></div>
+    <div class="scanline" aria-hidden="true"></div>
+  </div>
+
+  <div class="hero-content">
+    <div class="hero-status" data-reveal>
+      <span class="status-dot"></span>
+      <span class="mono">root@tarpeg007:~$ status — <em>open for engagements</em></span>
+    </div>
+
+    <h1 class="hero-title">
+      <span class="line-mask"><span class="line" data-hero-line>SAAD</span></span>
+      <span class="line-mask"><span class="line line-stroke" data-hero-line>FELLAHI</span></span>
+    </h1>
+
+    <div class="hero-alias mono" data-reveal>
+      <span class="alias-tag">aka</span>
+      <span class="alias-name">tarpeg007</span>
+      <span class="alias-sep">//</span>
+      <span class="alias-name alias-dark">Marshall&nbsp;D.&nbsp;Teach</span>
+    </div>
+
+    <p class="hero-sub" data-reveal>
+      Offensive security consultant &amp; researcher.
+      <span class="highlight">11 CVEs / GHSAs</span> across JS frameworks, WordPress and Wazuh,
+      including a <span class="highlight">CVSS 10.0 critical</span>. HTB
+      <span class="highlight">CPTS + CBBH</span>, <span class="highlight">Pro Hacker</span>.
+      I hunt vulnerabilities the way Teach hunts darkness — nothing stays hidden.
+    </p>
+
+    <div class="hero-cta" data-reveal>
+      <a href="#cves" class="btn btn-primary">
+        <span class="btn-glow"></span>
+        <span class="mono">./exploit --view-cves</span>
+      </a>
+      <a href="#contact" class="btn btn-ghost mono">contact --secure</a>
+    </div>
+
+    <div class="hero-scroll mono" aria-hidden="true">
+      <span>scroll</span>
+      <div class="scroll-track"><span class="scroll-thumb"></span></div>
+    </div>
+  </div>
+
+  <div class="hero-side mono" aria-hidden="true">
+    <span>yami yami no mi — the darkness consumes all</span>
+  </div>
+</section>
+
+<!-- ======= MARQUEE ======= -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track" id="marqueeTrack">
+    <span>penetration testing <i>◆</i> CVE research <i>◆</i> bug bounty <i>◆</i> idor/bola <i>◆</i> ssrf <i>◆</i> oauth/saml/jwt <i>◆</i> source review <i>◆</i> zehahahaha <i>◆</i></span>
+    <span>penetration testing <i>◆</i> CVE research <i>◆</i> bug bounty <i>◆</i> idor/bola <i>◆</i> ssrf <i>◆</i> oauth/saml/jwt <i>◆</i> source review <i>◆</i> zehahahaha <i>◆</i></span>
+  </div>
+</div>
+
+<!-- ======= ABOUT ======= -->
+<section class="section about" id="about" data-section>
+  <div class="section-head">
+    <span class="section-index mono">01</span>
+    <h2 class="section-title" data-reveal>/about<span class="title-cursor">_</span></h2>
+    <span class="section-path mono">~/tarpeg007/whoami.md</span>
+  </div>
+
+  <div class="profile-card" data-reveal>
+    <div class="pc-info">
+      <span class="pc-name">Saad Fellahi</span>
+      <span class="pc-role mono">Offensive Security Consultant @ Generovo</span>
+      <span class="pc-meta mono">Casablanca-Settat, Morocco · 1,894 followers</span>
+    </div>
+    <a class="pc-cta mono" href="mailto:tarpeg007@gmail.com">contact</a>
+  </div>
+
+  <div class="about-grid">
+    <div class="about-text">
+      <p class="lead" data-reveal>
+        Offensive security consultant with <strong>11 CVEs / GHSAs</strong> across
+        Hono, Fastify, WordPress plugins and <strong>Wazuh</strong> — including a
+        <strong>CVSS 10.0 critical</strong> NDJSON injection — plus a
+        <strong>CVSS 9.1 BOLA/IDOR</strong> accepted at Kiwi.com and
+        <strong>HTB CPTS + CBBH</strong> certifications.
+      </p>
+      <p data-reveal>
+        I find and responsibly disclose novel vulnerabilities in production-grade code
+        and live web/API targets — delivering client-grade PoCs, CVSS 3.1 scoring and
+        remediation. Currently Offensive Security Consultant at Generovo;
+        software engineering at <span class="highlight">1337 (42 Network)</span> — Level 11.
+        Arabic (native), French (C1), English (professional).
+      </p>
+      <p data-reveal>
+        Currently studying software engineering at
+        <span class="highlight">1337 Coding School (42 Network)</span> — Level 11.
+        Languages: Arabic (native), French (C1), English (professional).
+      </p>
+
+      <div class="cert-row" data-reveal>
+        <div class="cert-chip mono">HTB CPTS</div>
+        <div class="cert-chip mono">HTB CBBH</div>
+        <div class="cert-chip mono">HTB Pro Hacker</div>
+        <div class="cert-chip mono">H1 rank #1274</div>
+      </div>
+    </div>
+
+    <div class="about-stats">
+      <div class="stat-card" data-reveal>
+        <span class="stat-value mono" data-count="11">0</span>
+        <span class="stat-label mono">CVEs / GHSAs credited</span>
+      </div>
+      <div class="stat-card" data-reveal>
+        <span class="stat-value mono">10.0</span>
+        <span class="stat-label mono">CVSS — max accepted severity</span>
+      </div>
+      <div class="stat-card" data-reveal>
+        <span class="stat-value mono" data-count="2">0</span>
+        <span class="stat-label mono">Wordfence advisories published</span>
+      </div>
+      <div class="stat-card" data-reveal>
+        <span class="stat-value mono">#1274</span>
+        <span class="stat-label mono">HackerOne all-time rank</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======= CVE HALL ======= -->
+<section class="section cves" id="cves" data-section>
+  <div class="section-head">
+    <span class="section-index mono">02</span>
+    <h2 class="section-title" data-reveal>/cve_hall<span class="title-cursor">_</span></h2>
+    <span class="section-path mono">~/tarpeg007/advisories --credit=TarPeg007</span>
+  </div>
+
+  <div class="cve-list">
+
+    <a class="cve-card" data-reveal href="https://github.com/advisories?credit=TarPeg007" target="_blank" rel="noopener">
+      <div class="cve-top">
+        <span class="cve-id mono">CVE-2026-81888</span>
+        <span class="cve-badge mono sev-mod">moderate</span>
+      </div>
+      <h3>@hono/oauth-providers — OAuth state check fails open on omitted state</h3>
+      <p>Login CSRF and forced account linking when the state parameter is omitted.</p>
+      <div class="cve-meta mono"><span>npm</span><span>Aug 31, 2026</span></div>
+    </a>
+
+    <a class="cve-card" data-reveal href="https://github.com/advisories?credit=TarPeg007" target="_blank" rel="noopener">
+      <div class="cve-top">
+        <span class="cve-id mono">CVE-2026-73565</span>
+        <span class="cve-badge mono sev-mod">moderate</span>
+      </div>
+      <h3>@hono/node-server — unauthenticated memory-leak DoS</h3>
+      <p>Aborted WebSocket handshakes leak memory, enabling denial of service.</p>
+      <div class="cve-meta mono"><span>npm</span><span>Jul 21, 2026</span></div>
+    </a>
+
+    <a class="cve-card" data-reveal href="https://github.com/advisories/GHSA-6j39-726h-fx6p" target="_blank" rel="noopener">
+      <div class="cve-top">
+        <span class="cve-id mono">GHSA-6j39-726h-fx6p</span>
+        <span class="cve-badge mono sev-high">high</span>
+      </div>
+      <h3>Wazuh — SQL injection → RCE in wazuh-dbd</h3>
+      <p>One forged syslog packet → unescaped srcip on the PostgreSQL INSERT → stacked queries → COPY…TO PROGRAM → command execution as postgres. No auth. CWE-78 + CWE-89, confirmed by the Wazuh team.</p>
+      <div class="cve-meta mono"><span>c / wazuh</span><span>2026</span></div>
+    </a>
+
+    <a class="cve-card" data-reveal href="https://github.com/advisories/GHSA-ff9g-85jq-r3g3" target="_blank" rel="noopener">
+      <div class="cve-top">
+        <span class="cve-id mono">GHSA-ff9g-85jq-r3g3</span>
+        <span class="cve-badge mono sev-crit">critical · 10.0</span>
+      </div>
+      <h3>Wazuh Manager 5.0 — NDJSON injection in inventory_sync</h3>
+        <p>Asymmetric escaping in the OpenSearch _bulk request: the _id was escaped, the agent-controlled DataValue.index was raw. Admin-credential document deletion, cross-agent overwrites, dashboard poisoning. Patched in 5.0.0-beta3.</p>
+      <div class="cve-meta mono"><span>c / wazuh</span><span>2026</span></div>
+    </a>
+
+    <a class="cve-card" data-reveal href="https://github.com/TarPeg007" target="_blank" rel="noopener">
+      <div class="cve-top">
+        <span class="cve-id mono">CVE-2026-45798</span>
+        <span class="cve-badge mono sev-mod">confirmed</span>
+      </div>
+      <h3>Wazuh — vendor-confirmed vulnerability</h3>
+        <p>Vendor confirmed, fix merged, CVE assigned. Full technical details pending coordinated disclosure. Two further Wazuh RCEs currently sitting in ZDI.</p>
+      <div class="cve-meta mono"><span>c / wazuh</span><span>2026</span></div>
+    </a>
+
+    <a class="cve-card" data-reveal href="https://github.com/advisories/GHSA-69xw-7hcm-h432" target="_blank" rel="noopener">
+      <div class="cve-top">
+        <span class="cve-id mono">CVE-2026-44455</span>
+        <span class="cve-badge mono sev-mod">moderate</span>
+      </div>
+      <h3>hono/jsx — unvalidated JSX tag names allow HTML injection</h3>
+      <p>GHSA-69xw-7hcm-h432 · sole credit.</p>
+      <div class="cve-meta mono"><span>npm</span><span>May 7, 2026</span></div>
+    </a>
+
+    <a class="cve-card" data-reveal href="https://github.com/advisories/GHSA-573f-x89g-hqp9" target="_blank" rel="noopener">
+      <div class="cve-top">
+        <span class="cve-id mono">CVE-2026-3419</span>
+        <span class="cve-badge mono sev-mod">moderate</span>
+      </div>
+      <h3>fastify — malformed Content-Types pass validation</h3>
+        <p>Missing end-anchor in subtypeNameReg. GHSA-573f-x89g-hqp9 · sole credit.</p>
+      <div class="cve-meta mono"><span>npm</span><span>Mar 5, 2026</span></div>
+    </a>
+
+    <a class="cve-card" data-reveal href="https://github.com/advisories/GHSA-5pq2-9x2x-5p6w" target="_blank" rel="noopener">
+      <div class="cve-top">
+        <span class="cve-id mono">CVE-2026-29086</span>
+        <span class="cve-badge mono sev-mod">moderate</span>
+      </div>
+      <h3>hono — cookie attribute injection via setCookie()</h3>
+      <p>Unsanitized domain and path parameters. GHSA-5pq2-9x2x-5p6w · sole credit.</p>
+      <div class="cve-meta mono"><span>npm</span><span>Mar 4, 2026</span></div>
+    </a>
+
+    <a class="cve-card" data-reveal href="https://github.com/advisories/GHSA-p6xx-57qc-3wxr" target="_blank" rel="noopener">
+      <div class="cve-top">
+        <span class="cve-id mono">CVE-2026-29085</span>
+        <span class="cve-badge mono sev-mod">moderate</span>
+      </div>
+      <h3>hono — SSE control-field injection via CR/LF in writeSSE()</h3>
+      <p>GHSA-p6xx-57qc-3wxr · sole credit.</p>
+      <div class="cve-meta mono"><span>npm</span><span>Mar 4, 2026</span></div>
+    </a>
+
+    <div class="cve-card cve-pending" data-reveal>
+      <div class="cve-top">
+        <span class="cve-id mono">MCID15661231</span>
+        <span class="cve-badge mono sev-pend">pending</span>
+      </div>
+      <h3>libxml2 — XPath / entity-ref bypass</h3>
+      <p>Identified the root cause of CVE-2025-23369 (GitHub Enterprise SAML bypass). MITRE — pending publication.</p>
+      <div class="cve-meta mono"><span>c / mitre</span><span>in process</span></div>
+    </div>
+
+    <a class="cve-card cve-pending" data-reveal href="https://github.com/TarPeg007/CVE-2026-74586" target="_blank" rel="noopener">
+      <div class="cve-top">
+        <span class="cve-id mono">CVE-2026-74586</span>
+        <span class="cve-badge mono sev-pend">research · PoC</span>
+      </div>
+      <h3>Linux kernel — SCTP ASCONF use-after-free</h3>
+      <p>Independent research: clean no-root trigger (1,394/1,397 runs on Kali 7.1.5) and weaponization analysis — why it needs a second primitive before IP control. Original bug reported by Qing Ming.</p>
+      <div class="cve-meta mono"><span>c / kernel</span><span>write-up public</span></div>
+    </a>
+
+  </div>
+</section>
+
+<!-- ======= BOUNTY LOG ======= -->
+<section class="section bounties" id="bounties" data-section>
+  <div class="section-head">
+    <span class="section-index mono">03</span>
+    <h2 class="section-title" data-reveal>/bounty_log<span class="title-cursor">_</span></h2>
+    <span class="section-path mono">~/tarpeg007/submissions.log</span>
+  </div>
+
+  <div class="find-grid">
+    <div class="find-card" data-reveal>
+      <div class="find-head">
+        <span class="find-target mono">kiwi.com</span>
+        <span class="cve-badge mono sev-crit">critical · 9.1</span>
+      </div>
+      <h3>BOLA/IDOR — cross-tenant traveller PII</h3>
+      <p>Broken object-level authorization in the booking API enabling cross-tenant access to traveller PII. Triaged and confirmed via HackerOne.</p>
+      <div class="cve-meta mono"><span>hackerone</span><span>accepted</span></div>
+    </div>
+
+    <div class="find-card" data-reveal>
+      <div class="find-head">
+        <span class="find-target mono">grab</span>
+        <span class="cve-badge mono sev-high">high</span>
+      </div>
+      <h3>RSA private key leaked in public JS bundle</h3>
+      <p>Chained with a rate-limit bypass for amplified impact.</p>
+      <div class="cve-meta mono"><span>bug bounty</span><span>reported</span></div>
+    </div>
+
+    <div class="find-card" data-reveal>
+      <div class="find-head">
+        <span class="find-target mono">8x8</span>
+        <span class="cve-badge mono sev-high">high</span>
+      </div>
+      <h3>Unauthenticated analytics write API</h3>
+      <p>Hard-coded CSRF tokens and staging-environment exposure.</p>
+      <div class="cve-meta mono"><span>bug bounty</span><span>reported</span></div>
+    </div>
+  </div>
+
+  <h3 class="log-title mono" data-reveal>// wordfence — wordpress plugin advisories</h3>
+
+  <div class="log-table" data-reveal>
+    <div class="log-row log-head mono">
+      <span>target</span><span>finding</span><span>cve</span><span>status</span>
+    </div>
+    <div class="log-row mono">
+      <span class="log-target">Royal Addons for Elementor ≤1.7.1064</span>
+      <span>SSRF via Form Builder webhook_url (Contributor+)</span>
+      <span class="log-cve">CVE-2026-17123</span>
+      <span><i class="st st-paid">paid $14</i></span>
+    </div>
+    <div class="log-row mono">
+      <span class="log-target">Royal Addons for Elementor ≤1.7.1066</span>
+      <span>Sensitive info exposure via meta_query LIKE oracle (wpr_keyword)</span>
+      <span class="log-cve">CVE-2026-17585</span>
+      <span><i class="st st-pub">published</i></span>
+    </div>
+    <div class="log-row mono">
+      <span class="log-target">WPForms Lite ≤1.10.0.4</span>
+      <span>Missing authorization with integrity impact</span>
+      <span class="log-cve">—</span>
+      <span><i class="st st-dup">duplicate</i></span>
+    </div>
+    <div class="log-row mono">
+      <span class="log-target">Universal Google Adsense &amp; Ads Manager ≤1.1.8</span>
+      <span>Missing authorization with integrity impact</span>
+      <span class="log-cve">—</span>
+      <span><i class="st st-rej">rejected</i></span>
+    </div>
+  </div>
+</section>
+
+<!-- ======= ARSENAL ======= -->
+<section class="section arsenal" id="arsenal" data-section>
+  <div class="section-head">
+    <span class="section-index mono">04</span>
+    <h2 class="section-title" data-reveal>/arsenal<span class="title-cursor">_</span></h2>
+    <span class="section-path mono">~/tarpeg007/tools --list</span>
+  </div>
+
+  <div class="arsenal-grid">
+
+    <div class="weapon" data-reveal>
+      <div class="weapon-head">
+        <span class="weapon-icon mono">&gt;_</span>
+        <h3>Offensive Testing</h3>
+      </div>
+      <p>Web &amp; API penetration testing, black-box assessments, source-code review, phishing simulation, coordinated disclosure.</p>
+      <div class="weapon-tags mono">
+        <span>burp suite</span><span>caido</span><span>kali</span><span>nmap</span><span>ffuf</span>
+      </div>
+    </div>
+
+    <div class="weapon" data-reveal>
+      <div class="weapon-head">
+        <span class="weapon-icon mono">cwe</span>
+        <h3>Vulnerability Classes</h3>
+      </div>
+      <p>IDOR/BOLA, SSRF, XSS, CSRF, authentication bypass, SAML/OAuth/JWT abuse, header &amp; cookie injection.</p>
+      <div class="weapon-tags mono">
+        <span>owasp top 10</span><span>cvss 3.1</span><span>mitre att&amp;ck</span><span>cwe</span>
+      </div>
+    </div>
+
+    <div class="weapon" data-reveal>
+      <div class="weapon-head">
+        <span class="weapon-icon mono">sh</span>
+        <h3>Programming</h3>
+      </div>
+      <p>Tooling and PoC development across the stack — from recon automation to exploit scripts.</p>
+      <div class="weapon-tags mono">
+        <span>python</span><span>js/ts</span><span>bash</span><span>c</span><span>php</span>
+      </div>
+    </div>
+
+    <div class="weapon" data-reveal>
+      <div class="weapon-head">
+        <span class="weapon-icon mono">recon</span>
+        <h3>Recon Pipeline</h3>
+      </div>
+      <p>Multi-stage methodology with anti-false-positive gates and automated report generation.</p>
+      <div class="weapon-tags mono">
+        <span>subfinder</span><span>httpx</span><span>amass</span><span>nuclei</span><span>dirsearch</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ======= EXPERIENCE ======= -->
+<section class="section experience" id="experience" data-section>
+  <div class="section-head">
+    <span class="section-index mono">05</span>
+    <h2 class="section-title" data-reveal>/experience<span class="title-cursor">_</span></h2>
+    <span class="section-path mono">~/tarpeg007/career.log</span>
+  </div>
+
+  <div class="ops-list">
+    <div class="op-row" data-reveal>
+      <span class="op-num mono">now</span>
+      <div class="op-body">
+        <h3>Generovo — Offensive Security Consultant / Pentester</h3>
+        <p>Casablanca · Feb 2026 – Present (consultant since Aug 2026). Offensive security assessments and pentesting engagements; supports my ongoing CVE research in open-source security software.</p>
+      </div>
+      <span class="op-arrow mono">-&gt;</span>
+    </div>
+    <div class="op-row" data-reveal>
+      <span class="op-num mono">2026</span>
+      <div class="op-body">
+        <h3>Hack The Box — Pro Hacker</h3>
+        <p>Awarded the Pro Hacker rank. CPTS + CBBH certified.</p>
+      </div>
+      <span class="op-arrow mono">-&gt;</span>
+    </div>
+    <div class="op-row" data-reveal>
+      <span class="op-num mono">2025</span>
+      <div class="op-body">
+        <h3>WePown — Security Researcher</h3>
+        <p>Casablanca · Apr 2025 – Nov 2025. Black-box web, app &amp; infrastructure pentests across WordPress, React and Cloudflare stacks. Full client reports with reproducible PoCs and CVSS 3.1 scoring; ran the complete coordinated-disclosure cycle.</p>
+      </div>
+      <span class="op-arrow mono">-&gt;</span>
+    </div>
+    <div class="op-row" data-reveal>
+      <span class="op-num mono">2025</span>
+      <div class="op-body">
+        <h3>CodeAlpha — Cyber Security Analyst (Intern)</h3>
+        <p>Remote · Feb 2025 – Apr 2025. Cracking and ethical hacking engagements.</p>
+      </div>
+      <span class="op-arrow mono">-&gt;</span>
+    </div>
+    <div class="op-row" data-reveal>
+      <span class="op-num mono">edu</span>
+      <div class="op-body">
+        <h3>1337 Coding School (42 Network)</h3>
+        <p>Computer Software Engineering · 2023 – Present · Level 11. Peer-evaluated, project-based curriculum: systems programming in C, networks, web, security fundamentals.</p>
+      </div>
+      <span class="op-arrow mono">-&gt;</span>
+    </div>
+  </div>
+
+  <div class="proj-row" data-reveal>
+    <div class="proj-chip mono">SecureTest — AI-assisted pentest platform (Next.js/NestJS + local LLM)</div>
+    <div class="proj-chip mono">International CTF — podium finish</div>
+    <div class="proj-chip mono">Custom bug-bounty toolkit</div>
+  </div>
+</section>
+
+<!-- ======= TROPHIES ======= -->
+<section class="section trophies" id="trophies" data-section>
+  <div class="section-head">
+    <span class="section-index mono">06</span>
+    <h2 class="section-title" data-reveal>/wanted<span class="title-cursor">_</span></h2>
+    <span class="section-path mono">~/tarpeg007/wanted_poster.png</span>
+  </div>
+
+  <div class="wanted-poster" data-reveal>
+    <div class="wanted-head">
+      <span class="mono wanted-label">WANTED</span>
+      <span class="mono">DEAD OR ALIVE</span>
+    </div>
+    <div class="wanted-body">
+      <div class="wanted-photo">
+        <img src="assets/composite_4k.jpg" alt="tarpeg007 wanted poster — Marshall D. Teach" loading="lazy">
+      </div>
+      <div class="wanted-info">
+        <span class="wanted-name">TARPEG007</span>
+        <span class="wanted-alias mono">aka "Marshall D. Fellahi"</span>
+        <span class="wanted-bounty mono">¥ 3.996.000.000</span>
+        <p class="wanted-crimes mono">
+          crimes: 11 cve credits | cvss 10.0 critical | wazuh rce chains | oauth state fails open |
+          sse injection | cookie forging | idor chains | excessive recon
+        </p>
+      </div>
+    </div>
+    <div class="wanted-foot mono">
+      <span>marine&nbsp;·&nbsp;authorized security researcher</span>
+      <span>if found hunting your scope: report responsibly</span>
+    </div>
+  </div>
+</section>
+
+<!-- ======= CONTACT ======= -->
+<section class="section contact" id="contact" data-section>
+  <div class="section-head">
+    <span class="section-index mono">07</span>
+    <h2 class="section-title" data-reveal>/contact<span class="title-cursor">_</span></h2>
+    <span class="section-path mono">~/tarpeg007/reach_out.sh</span>
+  </div>
+
+  <div class="contact-wrap">
+    <h3 class="contact-big" data-reveal>LET'S MAP<br><span>YOUR ATTACK SURFACE</span></h3>
+
+    <div class="contact-cards" data-reveal>
+      <a class="contact-card" href="mailto:tarpeg007@gmail.com">
+        <span class="cc-label mono">email</span>
+        <span class="cc-value mono">tarpeg007@gmail.com</span>
+      </a>
+      <a class="contact-card" href="https://github.com/TarPeg007" target="_blank" rel="noopener">
+        <span class="cc-label mono">github</span>
+        <span class="cc-value mono">github.com/TarPeg007</span>
+      </a>
+      <a class="contact-card" href="https://hackerone.com/marshall-d-teach" target="_blank" rel="noopener">
+        <span class="cc-label mono">hackerone</span>
+        <span class="cc-value mono">hackerone.com/marshall-d-teach</span>
+      </a>
+      <a class="contact-card" href="https://linkedin.com/in/saad-fellahi-83b948272" target="_blank" rel="noopener">
+        <span class="cc-label mono">linkedin</span>
+        <span class="cc-value mono">in/saad-fellahi</span>
+      </a>
+    </div>
+
+    <div class="contact-loc mono" data-reveal>
+      <span class="loc-dot"></span> Casablanca-Settat, Morocco · Arabic / French / English
+    </div>
+  </div>
+
+  <footer class="footer mono">
+    <span>© <span id="year"></span> SAAD FELLAHI — tarpeg007</span>
+    <span class="footer-laugh">zehahahaha <span aria-hidden="true">☠</span></span>
+    <span>all findings disclosed responsibly</span>
+  </footer>
+</section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
