@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How to Use Security Test Resources Before Web Launch</title>
+<meta name="description" content="A practical pre-launch web app security testing playbook that maps OWASP WSTG scenarios to ASVS controls, exposes real risk, and produces retestable evidence.">
+<link rel="canonical" href="https://tarpeg007.github.io/blog/security-testing-before-web-launch/">
+<meta name="author" content="Saad Fellahi (tarpeg007)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to Use Security Test Resources Before Web Launch">
+<meta property="og:description" content="A practical pre-launch web app security testing playbook that maps OWASP WSTG scenarios to ASVS controls, exposes real risk, and produces retestable evidence.">
+<meta property="og:url" content="https://tarpeg007.github.io/blog/security-testing-before-web-launch/">
+<meta property="og:site_name" content="tarpeg007 — offensive security">
+<meta property="og:image" content="https://tarpeg007.github.io/assets/composite_4k.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://tarpeg007.github.io/css/article.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "How to Use Security Test Resources Before Web Launch", "description": "A practical pre-launch web app security testing playbook that maps OWASP WSTG scenarios to ASVS controls, exposes real risk, and produces retestable evidence.", "inLanguage": "en", "datePublished": "2026-11-10", "dateModified": "2026-11-10", "author": {"@type": "Person", "name": "Saad Fellahi", "url": "https://tarpeg007.github.io/#about", "alternateName": "tarpeg007", "sameAs": ["https://github.com/TarPeg007", "https://hackerone.com/marshall-d-teach", "https://linkedin.com/in/saad-fellahi-83b948272"]}, "publisher": {"@type": "Person", "name": "Saad Fellahi", "url": "https://tarpeg007.github.io/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tarpeg007.github.io/blog/security-testing-before-web-launch/"}, "isPartOf": {"@type": "WebSite", "name": "tarpeg007 — offensive security", "url": "https://tarpeg007.github.io/"}, "image": "https://tarpeg007.github.io/assets/composite_4k.jpg"}</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "en",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is the difference between OWASP WSTG and OWASP ASVS?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "OWASP WSTG explains how to test web applications through practical scenarios and methods. OWASP ASVS defines the security requirements and verification targets that an application should meet. A pre-launch playbook uses WSTG for test execution and ASVS for acceptance criteria."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can SAST and DAST replace manual pre-launch security testing?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. SAST and DAST provide useful, repeatable coverage for common weaknesses, dependencies, secrets, reachable endpoints, and configuration issues. Manual testing remains necessary for authorization, IDOR/BOLA, business logic, multi-step workflows, and application-specific trust assumptions."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What should a reproducible security test evidence package include?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Include the test precondition, authorized test account or role, affected build, exact request or steps, sanitized proof of impact, observed and expected results, timestamps, remediation guidance, finding owner, and retest outcome."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How should teams test authorization before a web launch?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Create a role-and-object matrix, then test every important action with changed object IDs, tenant IDs, roles, methods, and workflow states. Verify that authorization is enforced server-side and that unauthorized requests are denied consistently."
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="art-nav">
+  <a class="art-logo" href="https://tarpeg007.github.io/">[TarPeg<span>007</span>]</a>
+  <span class="art-path mono">~/writing/security-testing-before-web-launch</span>
+  <a class="art-back mono" href="https://tarpeg007.github.io/#writing">&larr; back to portfolio</a>
+</header>
+<main>
+<article class="article">
+  <div class="art-meta mono">
+    <span class="art-tag">security-testing</span>
+    <span>by <a href="https://tarpeg007.github.io/#about">Saad Fellahi (tarpeg007)</a></span>
+    <time datetime="2026-11-10">Nov 10, 2026</time>
+  </div>
+  <h1>How to Use Security Test Resources Before Web Launch</h1>
+  <p>Use Pre-launch Web Application Security Testing (WSTG + ASVS mapped playbook) by turning the threat model into a bounded staging assessment: map WSTG scenarios to ASVS requirements, automate baseline checks, manually verify authorization and sessions, and release only after each material finding has evidence, an owner, a fix, and a retest result.</p>
+<h2>Pre-launch Web Application Security Testing: map the right resources to the right risk</h2>
+<p>Pre-launch Web Application Security Testing (WSTG + ASVS mapped playbook) combines two complementary OWASP resources. The <a href="https://wstg.owasp.org/stable/4-Web_Application_Security_Testing/">OWASP Web Security Testing Guide (WSTG)</a> supplies practical test methods, while the <a href="https://asvs.owasp.org/">OWASP Application Security Verification Standard (ASVS)</a> defines the security controls the application should satisfy. The OWASP Top 10 is a prioritization lens, not a substitute for either resource. (<a href="https://wstg.owasp.org/latest/2-Introduction/">wstg.owasp.org</a>)</p>
+<p>Start threat modeling before running scanners. Threat modeling should identify:</p>
+<ul>
+<li>Sensitive data, privileged actions, and tenant boundaries.</li>
+<li>User roles, service accounts, API clients, and administrative paths.</li>
+<li>Trust boundaries between browser, API, identity provider, third-party service, and data store.</li>
+<li>Abuse cases, especially account takeover, cross-tenant reads, payment or workflow manipulation, and privilege escalation.</li>
+<li>Security assumptions that must be tested rather than accepted.</li>
+</ul>
+<p>The OWASP Testing Guide categories cover configuration and deployment management, identity management, authentication, authorization, session management, input validation, error handling, cryptography, business logic, and client-side testing. Use those categories to ensure a launch review does not stop at a generic vulnerability scan. (<a href="https://wstg.owasp.org/stable/4-Web_Application_Security_Testing/">wstg.owasp.org</a>)</p>
+<table style="border-collapse:collapse;width:100%;margin:1em 0;">
+<thead>
+<tr>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Security question before launch</th>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">WSTG-led test activity</th>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">ASVS-led acceptance focus</th>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Evidence to retain</th>
+</tr>
+</thead>
+<tbody><tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Can one user access another user's record?</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Authorization testing with role and object changes</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Enforced server-side access control</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Request, response, role matrix, retest result</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Can a stolen or fixed token remain useful?</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Session management testing</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Secure token lifecycle and invalidation</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Cookie or token attributes, logout and timeout results</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Can untrusted input change an interpreter command or query?</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Input validation and injection testing</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Context-appropriate validation and encoding controls</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Payload, affected endpoint, logs, fix verification</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Does deployment expose unsafe defaults?</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Configuration and deployment management testing</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Secure environment configuration</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Header capture, configuration evidence, remediation ticket</td>
+</tr>
+</tbody></table>
+<p>The prioritization data supports treating authorization as a release-critical manual test. In OWASP’s 2021 contributed dataset, Broken Access Control had 318,487 recorded occurrences[1]. (<a href="https://top10.owasp.org/2021/A01_2021-Broken_Access_Control/index.html?trk=article-ssr-frontend-pulse_little-text-block">top10.owasp.org</a>) In the same OWASP dataset, Injection had a 3.37% average incidence rate[2]. (<a href="https://top10.owasp.org/2021/A03_2021-Injection/">top10.owasp.org</a>) Cryptographic Failures had 233,788 recorded occurrences[3]. (<a href="https://top10.owasp.org/2021/A02_2021-Cryptographic_Failures/">top10.owasp.org</a>) Identification and Authentication Failures had 132,195 recorded occurrences[4]. (<a href="https://top10.owasp.org/2021/A07_2021-Identification_and_Authentication_Failures/">top10.owasp.org</a>)</p>
+<p>For authorization testing (IDOR/Broken Access Control), create a test matrix for every object type and meaningful action: read, create, update, delete, export, approve, administer, and invoke through an API. Change one authorization attribute at a time—object identifier, role, tenant, HTTP method, or workflow state—and confirm the server denies the action. TarPeg007’s <a href="https://tarpeg007.github.io/#bounties">BOLA/IDOR bounty record</a> illustrates why cross-tenant object access deserves explicit coverage before launch.</p>
+<h2>Pre-launch Web Application Security Testing: execute a WSTG + ASVS mapped playbook</h2>
+<p>Pre-launch Web Application Security Testing (WSTG + ASVS mapped playbook) works best as a short, traceable release process rather than a final-day scan.</p>
+<ol>
+<li><p><strong>Freeze a safe test scope.</strong></p>
+<ul>
+<li>Test a staging environment that matches production authentication, authorization, API routing, headers, and infrastructure settings as closely as possible.</li>
+<li>Define permitted accounts, test data, rate limits, and escalation contacts.</li>
+<li>Record the build identifier, commit, environment URL, and test window.</li>
+</ul>
+</li>
+<li><p><strong>Turn the threat model into a test inventory.</strong></p>
+<ul>
+<li>Map each high-risk flow to one or more OWASP Web Security Testing Guide scenarios.</li>
+<li>Map each expected control to an OWASP Application Security Verification Standard requirement identifier.</li>
+<li>Add business rules that generic standards cannot know, such as refund limits, tenant isolation, approval sequencing, or entitlement checks.</li>
+</ul>
+</li>
+<li><p><strong>Apply SAST/DAST guidance at the correct stage.</strong></p>
+<ul>
+<li>Run SAST, software composition analysis, and secret scanning during build or pull-request review.</li>
+<li>Run DAST against the controlled staging target to find reachable configuration, input-handling, and response issues.</li>
+<li>Use manual testing for authorization, workflow abuse, chained weaknesses, and assumptions about identity-provider claims. OWASP’s testing framework specifically positions SAST earlier in CI/CD and DAST in staging, alongside manual assessment. (<a href="https://wstg.owasp.org/latest/3-The_OWASP_Testing_Framework/0-The_Web_Security_Testing_Framework/">wstg.owasp.org</a>)</li>
+<li>Open-source options such as OWASP ZAP and commercial tools such as Burp Suite can provide DAST coverage; neither replaces an informed review of application-specific authorization logic.</li>
+</ul>
+</li>
+<li><p><strong>Manually test session management and identity transitions.</strong></p>
+<ul>
+<li>Confirm login rotates the session identifier.</li>
+<li>Confirm logout, password reset, account disablement, and privilege changes invalidate applicable sessions or tokens.</li>
+<li>Check that cookies use appropriate Secure, HttpOnly, and SameSite settings for the application’s architecture.</li>
+<li>Test idle timeout, absolute timeout, multi-device behavior, and OAuth or SAML callback handling.</li>
+</ul>
+</li>
+<li><p><strong>Build reproducible security test steps as evidence packages.</strong></p>
+<ul>
+<li>Include the precondition, account role, exact request, safe proof of impact, response, timestamps, and affected build.</li>
+<li>State the expected secure behavior and the observed behavior.</li>
+<li>Attach sanitized logs, screenshots, or an HTTP export where useful.</li>
+<li>Add severity rationale, remediation guidance, a named owner, and a retest outcome.</li>
+</ul>
+</li>
+<li><p><strong>Set a release gate.</strong></p>
+<ul>
+<li>Block launch for confirmed exploitable findings that expose sensitive data, enable unauthorized state changes, bypass authentication, or defeat tenant isolation.</li>
+<li>Require a documented risk acceptance for any deferred issue.</li>
+<li>Retest the fixed build, not merely the pull request or code diff.</li>
+</ul>
+</li>
+</ol>
+<p>TarPeg007’s <a href="https://tarpeg007.github.io/#arsenal">offensive testing arsenal</a> lists Burp Suite, Caido, Kali, Nmap, and ffuf among the tools used for web and API assessment. Tool choice should follow the test objective: use scanners for repeatable breadth, intercepting proxies for request manipulation, and focused manual testing for business logic and authorization decisions.</p>
+<h2>Pre-launch Web Application Security Testing: make the launch decision auditable</h2>
+<p>Pre-launch Web Application Security Testing (WSTG + ASVS mapped playbook) should end with an auditable decision, not a vague statement that the application was “tested.” The release owner should be able to answer these questions:</p>
+<ul>
+<li>Which threat-modelled flows were tested?</li>
+<li>Which OWASP Testing Guide categories were in scope, and which were deferred?</li>
+<li>Which ASVS requirements were verified, not applicable, or accepted as residual risk?</li>
+<li>Did authorization testing include IDOR/Broken Access Control cases across roles and tenants?</li>
+<li>Did session management testing cover issuance, rotation, revocation, logout, and expiry?</li>
+<li>Can another tester reproduce each material finding from its evidence package?</li>
+</ul>
+<p>A useful minimum deliverable is a concise security launch record containing the scope, control map, findings register, evidence packages, remediation status, retest results, and explicit residual-risk approvals. That record gives engineering, product, and security teams a shared basis for deciding whether the web application is ready to launch.</p>
+<h2>Sources &amp; references</h2>
+<ul>
+<li>[1] <a href="https://top10.owasp.org/2021/A01_2021-Broken_Access_Control/index.html?trk=article-ssr-frontend-pulse_little-text-block">top10.owasp.org</a></li>
+<li>[2] <a href="https://top10.owasp.org/2021/A03_2021-Injection/">top10.owasp.org</a></li>
+<li>[3] <a href="https://top10.owasp.org/2021/A02_2021-Cryptographic_Failures/">top10.owasp.org</a></li>
+<li>[4] <a href="https://top10.owasp.org/2021/A07_2021-Identification_and_Authentication_Failures/">top10.owasp.org</a></li>
+</ul>
+</article>
+</main>
+<footer class="art-foot mono">
+  <span>&copy; 2026 SAAD FELLAHI — tarpeg007</span>
+  <a href="https://tarpeg007.github.io/#contact">hire_me.sh</a>
+</footer>
+</body>
+</html>

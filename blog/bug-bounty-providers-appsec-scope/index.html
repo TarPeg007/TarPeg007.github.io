@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Which bug bounty providers fit your appsec scope?</title>
+<meta name="description" content="Choose a bug bounty or application security testing provider by matching scope, tester access, triage, SLAs and retesting to the risk your application faces.">
+<link rel="canonical" href="https://tarpeg007.github.io/blog/bug-bounty-providers-appsec-scope/">
+<meta name="author" content="Saad Fellahi (tarpeg007)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Which bug bounty providers fit your appsec scope?">
+<meta property="og:description" content="Choose a bug bounty or application security testing provider by matching scope, tester access, triage, SLAs and retesting to the risk your application faces.">
+<meta property="og:url" content="https://tarpeg007.github.io/blog/bug-bounty-providers-appsec-scope/">
+<meta property="og:site_name" content="tarpeg007 — offensive security">
+<meta property="og:image" content="https://tarpeg007.github.io/assets/composite_4k.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://tarpeg007.github.io/css/article.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Which bug bounty providers fit your appsec scope?", "description": "Choose a bug bounty or application security testing provider by matching scope, tester access, triage, SLAs and retesting to the risk your application faces.", "inLanguage": "en", "datePublished": "2026-11-10", "dateModified": "2026-11-10", "author": {"@type": "Person", "name": "Saad Fellahi", "url": "https://tarpeg007.github.io/#about", "alternateName": "tarpeg007", "sameAs": ["https://github.com/TarPeg007", "https://hackerone.com/marshall-d-teach", "https://linkedin.com/in/saad-fellahi-83b948272"]}, "publisher": {"@type": "Person", "name": "Saad Fellahi", "url": "https://tarpeg007.github.io/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tarpeg007.github.io/blog/bug-bounty-providers-appsec-scope/"}, "isPartOf": {"@type": "WebSite", "name": "tarpeg007 — offensive security", "url": "https://tarpeg007.github.io/"}, "image": "https://tarpeg007.github.io/assets/composite_4k.jpg"}</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "en",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "When should an organization choose a bug bounty program over a penetration test?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Choose a bug bounty program when the organization needs continuous testing of a stable, internet-facing scope and can operate researcher communication, triage, remediation, and rewards. Choose a penetration test when a release, transaction, compliance date, sensitive environment, or complex authenticated workflow needs focused testing within a defined window."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can a bug bounty provider test mobile applications and APIs?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, but the program scope must separately name the mobile application packages, supported operating systems, backend APIs, test accounts, permitted traffic volume, and exclusions. Use OWASP MASVS for mobile-client controls and OWASP ASVS for the remote services the mobile application uses."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What should an application security testing SLA include?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "An SLA should specify acknowledgement, triage, severity decision, engineering assignment, remediation, and retesting targets. It should also state escalation paths, business-hour coverage, emergency contacts, evidence requirements, and who has authority to close a finding."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How does a retesting or validation cycle work?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "After engineering deploys a fix, the original tester, researcher, or an independent validation team reproduces the original scenario and checks for bypasses or regressions. The finding closes only when the agreed acceptance evidence shows the vulnerability is no longer exploitable in the intended environment."
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="art-nav">
+  <a class="art-logo" href="https://tarpeg007.github.io/">[TarPeg<span>007</span>]</a>
+  <span class="art-path mono">~/writing/bug-bounty-providers-appsec-scope</span>
+  <a class="art-back mono" href="https://tarpeg007.github.io/#writing">&larr; back to portfolio</a>
+</header>
+<main>
+<article class="article">
+  <div class="art-meta mono">
+    <span class="art-tag">security-testing</span>
+    <span>by <a href="https://tarpeg007.github.io/#about">Saad Fellahi (tarpeg007)</a></span>
+    <time datetime="2026-11-10">Nov 10, 2026</time>
+  </div>
+  <h1>Which bug bounty providers fit your appsec scope?</h1>
+  <p>The right bug bounty and application security testing provider depends on whether your app needs continuous external research, a time-boxed expert assessment, or both. Select against actual asset scope, tester access, mobile and API coverage, Rules of Engagement, triage capacity, remediation SLAs, and an explicit retesting cycle—not platform name alone.</p>
+<h2>Match bug bounty and application security testing provider selection to the application</h2>
+<p>Bug bounty and application security testing provider selection starts with the application’s attack surface and operating model. A public bug bounty program can provide ongoing, diverse external testing; a penetration-testing consultancy provides a defined assessment window and closer collaboration; a hybrid model combines both.</p>
+<p>HackerOne’s 2026 research report draws on <strong>92,194 valid vulnerability reports</strong>[1], illustrating why provider operations matter as much as researcher access. Separately, Bugcrowd reported that <strong>web applications represented 58% of submissions</strong> on its platform in the cited dataset[2]. For most web-first products, web, API, identity, authorization, and cloud-administration flows therefore deserve explicit coverage in the scope.</p>
+<table style="border-collapse:collapse;width:100%;margin:1em 0;">
+<thead>
+<tr>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Application security need</th>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Best-fitting provider model</th>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">What to verify before buying</th>
+</tr>
+</thead>
+<tbody><tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Continuous testing of internet-facing web and API assets</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Managed public or private bug bounty program</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Researcher access, duplicate handling, triage workflow, bounty governance, response commitments</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Release, acquisition, or compliance deadline</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Time-boxed penetration test</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Named testers, test days, authenticated access, report date, Retesting / validation cycle</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Sensitive production environment or immature security operations</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Private program or consultant-led assessment</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Rules of Engagement (ROE), data handling, emergency contacts, test windows, evidence retention</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Native Android or iOS application with backend APIs</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Mobile specialist plus backend testing</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">OWASP MASVS coverage for the client and OWASP ASVS coverage for remote services</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Infrastructure and cloud configuration exposure</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Pentest plus configuration review</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">CIS Benchmarks coverage, identity paths, Kubernetes or cloud scope, remediation ownership</td>
+</tr>
+</tbody></table>
+<p>A provider should be able to turn the asset inventory into an unambiguous testing matrix:</p>
+<ol>
+<li><strong>List in-scope assets.</strong> Include production domains, APIs, mobile packages, administrative portals, cloud accounts, third-party integrations, and test environments only where authorized.</li>
+<li><strong>Define access.</strong> State whether testing is black-box, grey-box, or white-box. Supply test accounts by role when authorization logic is central to the application.</li>
+<li><strong>Set exclusions.</strong> Identify social engineering, denial-of-service testing, physical attacks, customer data access, and third-party systems that are out of scope.</li>
+<li><strong>Map test objectives.</strong> Use the <a href="https://top10.owasp.org/en/">OWASP Top 10</a> as a web-risk awareness baseline, then make business logic, BOLA/IDOR, OAuth, SAML, JWT, SSRF, and payment or workflow abuse explicit where relevant.</li>
+<li><strong>Set acceptance evidence.</strong> Require reproducible steps, affected asset, impact, severity rationale, proof of concept, remediation guidance, and retest evidence.</li>
+</ol>
+<p>For context, <strong>65% of Bugcrowd respondents said they had chosen not to disclose a vulnerability because no clear reporting path existed</strong>[3]. A provider is therefore not only a source of testing talent; the provider should also make the reporting route, safe-harbor language, disclosure rules, and escalation contacts usable for researchers.</p>
+<h2>Compare bug bounty and application security testing coverage, standards, and alternatives</h2>
+<p>Bug bounty and application security testing coverage should be measured against relevant standards rather than a generic promise to “test the app.” For server-side web and API systems, use <a href="https://asvs.owasp.org/">OWASP ASVS</a> requirements as a scoping checklist. For native mobile clients, use OWASP MASVS; OWASP explains that MASVS focuses on the client-side application and that associated remote endpoints should be tested against an appropriate standard such as ASVS.</p>
+<p>A practical coverage brief should distinguish:</p>
+<ul>
+<li><strong>Web and API security:</strong> authorization, authentication, session management, input handling, server-side request forgery, insecure direct object references, rate limiting, and tenant isolation.</li>
+<li><strong>Mobile security:</strong> secure storage, transport, jailbreak/root resistance where needed, deep links, local authentication, reverse engineering exposure, and backend interactions under OWASP MASVS.</li>
+<li><strong>Cloud and platform security:</strong> configuration review against applicable <a href="https://www.cisecurity.org/cis-benchmarks">CIS Benchmarks</a>, secrets exposure, IAM paths, network controls, container configuration, and logging.</li>
+<li><strong>Dependency and vulnerability intelligence:</strong> identify relevant CVE (Common Vulnerabilities and Exposures) records and consult the <a href="https://web.nvd.nist.gov/">NVD (National Vulnerability Database)</a> for vulnerability-management context. A CVE identifier does not prove that an application is exploitable; the provider should validate version, reachability, compensating controls, and real impact.</li>
+</ul>
+<p>Do not treat a bug bounty platform as a substitute for all AppSec work. HackerOne, Bugcrowd, and Intigriti can fit organizations that need managed researcher programs and ongoing reporting operations. A specialist penetration tester can be stronger for a short deadline, a complex authenticated workflow, a source review, a newly released product, or a sensitive environment that cannot support broad researcher access. Automated SAST, DAST, dependency scanning, and cloud-posture tools are useful complements, but they do not independently prove that multi-step business logic is secure.</p>
+<p>Google’s Vulnerability Reward Program awarded <strong>just under $12 million to more than 600 researchers in 2024</strong>[4]. The lesson for buyer evaluation is not to copy Google’s reward levels; it is to ensure that rewards, scope clarity, prompt communication, and a workable Triage workflow are aligned with the risk and complexity of the application.</p>
+<p>TarPeg 007 is best evaluated as a consultant-led option rather than as a crowdsourced platform. The <a href="https://tarpeg007.github.io/#cve_hall_">TarPeg 007 CVE research record</a> documents work across JavaScript frameworks, WordPress, Wazuh, and Linux research. The <a href="https://tarpeg007.github.io/#bounty_log_">TarPeg 007 bounty log</a> also identifies reported BOLA/IDOR, exposed-key, and unauthenticated API findings. For a web or API assessment, ask TarPeg 007 to confirm the exact assets, access level, test window, deliverables, and availability before engagement; those details determine whether a consultant-led assessment fits better than HackerOne, Bugcrowd, Intigriti, or an internal security team.</p>
+<h2>Evaluate application security testing provider operations before signing</h2>
+<p>Bug bounty and application security testing provider operations determine whether valid findings become verified fixes. Require a written operating model that covers the full finding lifecycle:</p>
+<ol>
+<li><strong>Rules of Engagement (ROE):</strong> authorized targets, permitted techniques, safe-harbor language, prohibited actions, testing hours, production safeguards, and emergency escalation.</li>
+<li><strong>Triage workflow:</strong> who validates reports, handles duplicates, requests clarification, determines severity, and communicates with researchers or testers.</li>
+<li><strong>SLA (Service Level Agreement):</strong> separate response, validation, remediation, and disclosure targets by severity. Acknowledge that an SLA without an engineering owner is not a remediation plan.</li>
+<li><strong>Severity and prioritization:</strong> define the methodology, such as CVSS plus business impact. A critical authorization flaw in a low-CVSS workflow may still need urgent treatment.</li>
+<li><strong>Remediation handoff:</strong> require concise reproduction steps, affected versions, attack preconditions, remediation advice, and a ticket routed to an accountable engineering team.</li>
+<li><strong>Retesting / validation cycle:</strong> define who verifies the fix, what evidence is required, when a report can be closed, and how regressions are handled after a release.</li>
+</ol>
+<p>Ask every candidate—platform, consultancy, or hybrid provider—the same questions:</p>
+<ul>
+<li>Which asset types and authentication models can the provider test?</li>
+<li>Can the provider cover OWASP ASVS, OWASP Top 10, OWASP MASVS, and applicable CIS Benchmarks without claiming unsupported certification?</li>
+<li>Is the triage team separate from the testers or researchers, and how are conflicts resolved?</li>
+<li>What information can the provider share about duplicate rate, false-positive controls, report quality requirements, and escalation paths?</li>
+<li>Is retesting included, limited, or separately priced?</li>
+<li>Who owns the disclosure decision and any CVE coordination when a vulnerability affects reusable software?</li>
+</ul>
+<p>Choose the provider that creates the smallest gap between discovery, validated impact, engineering ownership, and verified remediation. A broad researcher community can expand discovery; a focused tester can deepen contextual analysis; strong application security testing coverage and program operations are what make either model actionable.</p>
+<h2>Sources &amp; references</h2>
+<ul>
+<li>[1] <a href="https://www.hackerone.com/report/hacker-powered-security">hackerone.com</a></li>
+<li>[2] <a href="https://www.bugcrowd.com/wp-content/uploads/2024/01/Inside-the-Platform-Vulnerability-Trends-Report.pdf">bugcrowd.com</a></li>
+<li>[3] <a href="https://www.bugcrowd.com/wp-content/uploads/2026/01/Inside-the-Mind-of-a-Hacker-2026.pdf">bugcrowd.com</a></li>
+<li>[4] <a href="https://security.googleblog.com/2025/03/">security.googleblog.com</a></li>
+</ul>
+</article>
+</main>
+<footer class="art-foot mono">
+  <span>&copy; 2026 SAAD FELLAHI — tarpeg007</span>
+  <a href="https://tarpeg007.github.io/#contact">hire_me.sh</a>
+</footer>
+</body>
+</html>
