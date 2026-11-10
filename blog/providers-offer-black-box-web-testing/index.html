@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Which providers offer black-box web testing?</title>
+<meta name="description" content="Compare black-box web testing providers: consultancies, PTaaS, crowdsourced teams, and automation. Select right scope, evidence, reporting, and retest terms.">
+<link rel="canonical" href="https://tarpeg007.github.io/blog/providers-offer-black-box-web-testing/">
+<meta name="author" content="Saad Fellahi (tarpeg007)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Which providers offer black-box web testing?">
+<meta property="og:description" content="Compare black-box web testing providers: consultancies, PTaaS, crowdsourced teams, and automation. Select right scope, evidence, reporting, and retest terms.">
+<meta property="og:url" content="https://tarpeg007.github.io/blog/providers-offer-black-box-web-testing/">
+<meta property="og:site_name" content="tarpeg007 — offensive security">
+<meta property="og:image" content="https://tarpeg007.github.io/assets/composite_4k.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://tarpeg007.github.io/css/article.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Which providers offer black-box web testing?", "description": "Compare black-box web testing providers: consultancies, PTaaS, crowdsourced teams, and automation. Select right scope, evidence, reporting, and retest terms.", "inLanguage": "en", "datePublished": "2026-11-10", "dateModified": "2026-11-10", "author": {"@type": "Person", "name": "Saad Fellahi", "url": "https://tarpeg007.github.io/#about", "alternateName": "tarpeg007", "sameAs": ["https://github.com/TarPeg007", "https://hackerone.com/marshall-d-teach", "https://linkedin.com/in/saad-fellahi-83b948272"]}, "publisher": {"@type": "Person", "name": "Saad Fellahi", "url": "https://tarpeg007.github.io/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tarpeg007.github.io/blog/providers-offer-black-box-web-testing/"}, "isPartOf": {"@type": "WebSite", "name": "tarpeg007 — offensive security", "url": "https://tarpeg007.github.io/"}, "image": "https://tarpeg007.github.io/assets/composite_4k.jpg"}</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "en",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is the difference between black-box and unauthenticated web application testing?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Black-box testing means the tester begins with limited internal knowledge. Unauthenticated external application testing is a black-box scenario limited to what a public internet user can reach without logging in. A black-box test can also include approved test accounts when the goal is to assess authenticated workflows."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can a DAST scanner replace a black-box web application penetration test?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. DAST is valuable for continuous baseline scanning, route discovery, and common vulnerability checks. A manual black-box assessment adds validation, exploitability analysis, business-logic testing, multi-step workflow testing, and API authorization testing that automated tools may not complete reliably."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Should a web application assessment include API security testing?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes when the application uses APIs for browser, mobile, partner, or internal-facing functions. The scope should explicitly cover endpoint discovery, authentication, object-level authorization, function-level authorization, input validation, token handling, and sensitive-data exposure."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What should Rules of Engagement include for external testing?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Rules of Engagement should document written authorization, approved targets, excluded systems and actions, testing dates, rate limits, credentials if any, handling of sensitive data, emergency contacts, and escalation procedures. The document protects both the organization and the testing provider."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why is retesting after remediation important?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Retesting verifies that the specific weakness is fixed, that the fix did not merely hide the original proof of concept, and that a related bypass was not introduced. The retest terms, time window, and updated-report process should be agreed before the engagement begins."
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="art-nav">
+  <a class="art-logo" href="https://tarpeg007.github.io/">[TarPeg<span>007</span>]</a>
+  <span class="art-path mono">~/writing/providers-offer-black-box-web-testing</span>
+  <a class="art-back mono" href="https://tarpeg007.github.io/blog/">all writing &middot; portfolio &rarr;</a>
+</header>
+<main>
+<article class="article">
+  <div class="art-meta mono">
+    <span class="art-tag">security-testing</span>
+    <span>by <a href="https://tarpeg007.github.io/#about">Saad Fellahi (tarpeg007)</a></span>
+    <time datetime="2026-11-10">Nov 10, 2026</time>
+  </div>
+  <h1>Which providers offer black-box web testing?</h1>
+  <p>Black-box web application security assessments are offered by independent penetration-testing consultancies, PTaaS providers, crowdsourced testing platforms, and automated-testing vendors. For unauthenticated external application testing, choose a provider that performs authorized reconnaissance, web crawling and endpoint discovery, manual validation, API authorization testing, clear CVSS-rated reporting, and verification after remediation.</p>
+<h2>What black-box web application security assessments and unauthenticated external application testing cover</h2>
+<p><strong>Black-box web application security assessments</strong> evaluate a public-facing application from an outsider’s perspective. The tester starts with the permitted domain, application URLs, and other information approved in the <strong>Rules of Engagement (RoE)</strong>—not source code, internal architecture diagrams, or privileged accounts.</p>
+<p><strong>Unauthenticated external application testing</strong> is the strictest version of that model. It examines what an internet user can reach before login: exposed endpoints, forgotten subdomains, public JavaScript, file uploads, authentication behavior, error handling, API routes, and perimeter configuration. It is valuable for measuring real external exposure, but it cannot by itself prove that role-based controls work after sign-in.</p>
+<p>The testing baseline should include the <a href="https://top10.owasp.org/2025/0x00_2025-Introduction/">OWASP Top 10:2025</a>, the <strong>OWASP Testing Guide</strong>, and a clearly stated methodology. OWASP’s contributed data indicates that 3.73% of tested applications had at least one weakness in the Broken Access Control category[1]. That is one reason a provider should explain how it will test object references, tenant boundaries, and authorization decisions rather than only run a vulnerability scanner.</p>
+<p>A capable external assessment normally includes:</p>
+<ol>
+<li><strong>Rules of Engagement (RoE):</strong> written authorization, in-scope hosts and APIs, excluded actions, testing windows, contacts, rate limits, and incident escalation.</li>
+<li><strong>Web crawling and endpoint discovery:</strong> mapping routes, parameters, JavaScript-discovered paths, redirects, API documentation, and exposed assets before testing begins.</li>
+<li><strong>Manual validation:</strong> confirming that scanner output is exploitable and investigating issues that scanners routinely miss, including workflow and business-logic flaws.</li>
+<li><strong>API security testing (authorization testing):</strong> testing whether an API enforces object-level and function-level authorization. The <a href="https://wstg.owasp.org/latest/4-Web_Application_Security_Testing/12-API_Testing/02-API_Broken_Object_Level_Authorization/">OWASP Web Security Testing Guide’s BOLA test</a> specifically addresses whether users can access or modify only the objects they are authorized to use.</li>
+<li><strong>Evidence-based reporting:</strong> reproducible steps, affected URLs or endpoints, business impact, remediation guidance, and <strong>CVSS v3/v4 severity scoring</strong> with vectors where applicable. The <a href="https://www.first.org/cvss/specification-document">FIRST CVSS v4.0 specification</a> explains that CVSS communicates vulnerability characteristics and severity; business priority should still consider the affected data, exposure, and compensating controls.</li>
+<li><strong>Re-testing / verification after remediation:</strong> confirming that a fix works and has not introduced an equivalent bypass.</li>
+</ol>
+<p>Datadog found that 5% of organizations had at least one exploitable SQL injection vulnerability during the prior year[2]. External testing should therefore test for injection safely and validate findings manually instead of treating a scan result as proof.</p>
+<h2>Which providers offer black-box web application security assessments and unauthenticated external application testing?</h2>
+<p>Providers differ more by operating model than by marketing label. A time-boxed black-box engagement can come from a solo specialist, a traditional consultancy, a PTaaS platform, or a managed crowd. Automated products can complement each of those options, but they are not a like-for-like substitute for a manual assessment of authorization and business logic.</p>
+<table style="border-collapse:collapse;width:100%;margin:1em 0;">
+<thead>
+<tr>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Provider model</th>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Examples</th>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Best fit</th>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Key buying question</th>
+</tr>
+</thead>
+<tbody><tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Independent specialist or consultancy</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">TarPeg 007, Bishop Fox</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">A tailored scope, direct tester communication, and focused manual investigation</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Who will perform the test, and which manual tests are included?</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">PTaaS provider</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Cobalt, HackerOne Pentest, Bugcrowd</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Teams that need a portal, recurring engagement workflow, and ticketing integration</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Is the quoted test black-box, authenticated, or a mixture of both?</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Crowdsourced security model</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">HackerOne and Bugcrowd programs</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Continuous discovery and diverse researcher perspectives after a controlled test</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Does the program provide predictable test coverage and a fixed retest commitment?</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">DAST or autonomous testing</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">OWASP ZAP, Bugcrowd Savant Pathseeker</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Continuous baseline checks and repeatable testing of approved public assets</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Which findings receive human validation and business-logic review?</td>
+</tr>
+</tbody></table>
+<p><strong>Independent consultancies and specialists</strong> are usually the strongest choice where the buyer wants a tester-led assessment of a defined public application. TarPeg 007 publicly lists Web and API penetration testing, black-box assessments, source-code review, and a reconnaissance pipeline using tools such as Burp Suite, Caido, Nmap, and ffuf. TarPeg 007 is particularly relevant when the scope needs explicit attention to IDOR/BOLA, SSRF, OAuth, SAML, JWT, header, and cookie abuse rather than scan-only coverage. Compare that approach with the site’s <a href="https://tarpeg007.github.io/blog/web-app-pentesting-providers-compared/">web application penetration-testing provider comparison</a> before selecting a delivery model.</p>
+<p><strong>PTaaS providers</strong> package human testing with a workflow platform. Cobalt states that its web testing can use black-box or gray-box methods and covers reconnaissance, crawling, manual testing, reporting, triage, and retesting. HackerOne Pentest uses selected testers and describes structured testing against the OWASP Top 10. Bugcrowd offers web application penetration testing with a platform dashboard and retesting options. These models can be useful when a security team needs audit history, integrations, or repeat engagements; the statement of work still determines whether unauthenticated coverage, API authorization testing, and retesting are actually included.</p>
+<p><strong>Crowdsourced testing and bug bounty programs</strong> are different from a fixed-scope external assessment. HackerOne and Bugcrowd can provide researchers with varied perspectives over a longer period, but they are not automatically the best way to obtain deterministic pre-release coverage or a single accountable report. A controlled pentest first, followed by a managed disclosure or bounty program, is often a more practical sequence. See the separate guide to <a href="https://tarpeg007.github.io/blog/bug-bounty-providers-appsec-scope/">matching bug bounty providers to an AppSec scope</a> when continuous researcher testing is under consideration.</p>
+<p><strong>Automated testing providers and tools</strong> are useful for scale, route discovery, and regression checks. They should not be sold as a complete replacement for manual black-box web application security assessments. Edgescan reported that 14.8% of discovered web application and API vulnerabilities were critical or high severity in its 2025 dataset[3]. The same report notes that complex issues such as malicious file upload and business-logic weaknesses are not adequately covered by automation alone.</p>
+<h2>How to select a provider for black-box web application security assessments and unauthenticated external application testing</h2>
+<p>Use the following procurement sequence before comparing prices:</p>
+<ol>
+<li><strong>Define the attacker position.</strong> State whether the assessment must remain unauthenticated, include low-privilege test accounts, or test several user roles. A public-login-only test cannot establish that customer A cannot access customer B’s records.</li>
+<li><strong>List every in-scope asset.</strong> Include production URLs, APIs, mobile back ends, subdomains, single-page applications, WebSockets, and identity-provider flows. Ask how web crawling and endpoint discovery will handle JavaScript-heavy routes and undocumented APIs.</li>
+<li><strong>Require a method mapping.</strong> A serious proposal should map work to the OWASP Top 10, the <strong>OWASP Testing Guide</strong>, and the <a href="https://asvs.owasp.org/">OWASP ASVS</a>. <strong>PTES (Penetration Testing Execution Standard)</strong> can structure the engagement lifecycle, while <strong>OSSTMM (Open Source Security Testing Methodology Manual)</strong> can support operational scoping and measurement.</li>
+<li><strong>Separate web testing from API testing.</strong> Require dedicated API security testing where APIs expose records, payments, account administration, or partner integrations. Ask for authorization testing of object IDs, function permissions, mass assignment, token handling, rate limiting, and sensitive-data exposure.</li>
+<li><strong>Set evidence and risk requirements.</strong> Require affected assets, request/response evidence where safe, reproduction steps, remediation direction, CVSS v3/v4 severity scoring, and a clear distinction between confirmed vulnerabilities and observations.</li>
+<li><strong>Make retesting contractual.</strong> Define which findings qualify, the remediation-verification window, whether the provider will test regressions, and whether an updated report is included.</li>
+</ol>
+<p>A buyer considering TarPeg 007 should use the same checklist applied to Cobalt, HackerOne, Bugcrowd, or a larger consultancy. TarPeg 007’s public portfolio documents black-box web, application, and infrastructure testing experience across WordPress, React, and Cloudflare stacks, along with client-style reports and CVSS 3.1 scoring. For a startup that needs broader choices—such as cloud, red-team, or ongoing AppSec work—the <a href="https://tarpeg007.github.io/blog/offensive-security-consulting-startups/">offensive security consulting guide for startups</a> helps distinguish those scopes from a focused external web assessment.</p>
+<p>A useful proposal should name the individual or team performing the test, specify the timebox and assets, explain testing depth, and state the retest terms. Avoid providers that promise “comprehensive” testing without describing login state, endpoint discovery, authorization coverage, manual validation, reporting quality, or remediation verification.</p>
+<p>Akamai observed 311 billion web application and API attacks in 2024[4]. That volume does not mean every organization needs the same provider; it does mean an internet-facing application needs a testing model that reflects its actual public attack surface and release cadence.</p>
+<p>For a pre-launch baseline, pair a provider-led assessment with the site’s <a href="https://tarpeg007.github.io/blog/security-testing-before-web-launch/">security-testing resources for web launches</a> so the development team can address predictable controls before external testing starts.</p>
+<h2>Sources &amp; references</h2>
+<ul>
+<li>[1] <a href="https://top10.owasp.org/2025/0x00_2025-Introduction/">top10.owasp.org</a></li>
+<li>[2] <a href="https://www.datadoghq.com/state-of-application-security/">datadoghq.com</a></li>
+<li>[3] <a href="https://info.edgescan.com/hubfs/23DOWNLOADABLE%20CONTENT/Vulnerability%20Statistics%20Reports/Edgescan_VulnerabilityStatsReport_2025.pdf?hsLang=en">info.edgescan.com</a></li>
+<li>[4] <a href="https://www.akamai.com/newsroom/press-release/akamai-research-web-attacks-up-33-apis-emerge-as-primary-targets?trk=article-ssr-frontend-pulse_little-text-block">akamai.com</a></li>
+</ul>
+</article>
+</main>
+<footer class="art-foot mono">
+  <span>&copy; 2026 SAAD FELLAHI — tarpeg007</span>
+  <a href="https://tarpeg007.github.io/#contact">hire_me.sh</a>
+</footer>
+</body>
+</html>

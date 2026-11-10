@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How to Test Web Apps for IDOR With Repeatable Steps</title>
+<meta name="description" content="Learn a repeatable, authorized IDOR test process: map access rules, swap safe object IDs, validate server denials, document evidence, fix policies, and retest.">
+<link rel="canonical" href="https://tarpeg007.github.io/blog/test-web-apps-idor-repeatable-steps/">
+<meta name="author" content="Saad Fellahi (tarpeg007)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to Test Web Apps for IDOR With Repeatable Steps">
+<meta property="og:description" content="Learn a repeatable, authorized IDOR test process: map access rules, swap safe object IDs, validate server denials, document evidence, fix policies, and retest.">
+<meta property="og:url" content="https://tarpeg007.github.io/blog/test-web-apps-idor-repeatable-steps/">
+<meta property="og:site_name" content="tarpeg007 — offensive security">
+<meta property="og:image" content="https://tarpeg007.github.io/assets/composite_4k.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://tarpeg007.github.io/css/article.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "How to Test Web Apps for IDOR With Repeatable Steps", "description": "Learn a repeatable, authorized IDOR test process: map access rules, swap safe object IDs, validate server denials, document evidence, fix policies, and retest.", "inLanguage": "en", "datePublished": "2026-11-10", "dateModified": "2026-11-10", "author": {"@type": "Person", "name": "Saad Fellahi", "url": "https://tarpeg007.github.io/#about", "alternateName": "tarpeg007", "sameAs": ["https://github.com/TarPeg007", "https://hackerone.com/marshall-d-teach", "https://linkedin.com/in/saad-fellahi-83b948272"]}, "publisher": {"@type": "Person", "name": "Saad Fellahi", "url": "https://tarpeg007.github.io/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tarpeg007.github.io/blog/test-web-apps-idor-repeatable-steps/"}, "isPartOf": {"@type": "WebSite", "name": "tarpeg007 — offensive security", "url": "https://tarpeg007.github.io/"}, "image": "https://tarpeg007.github.io/assets/composite_4k.jpg"}</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "en",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is the difference between IDOR and BOLA?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "IDOR is the common web-application term for insecure direct object references. BOLA, or Broken Object Level Authorization, is OWASP’s API-security term for the same core failure: the server does not verify that the authenticated identity may perform the requested action on the specific object."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do UUIDs prevent IDOR vulnerabilities?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. UUIDs and other opaque identifiers can reduce easy enumeration, but they do not enforce authorization. The server must check object ownership, tenant membership, role, state, and applicable policy for every sensitive request."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Which requests should IDOR testing cover?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Test more than read endpoints. Include create, read, update, delete, download, export, share, approval, refund, invitation, bulk operations, nested objects, GraphQL mutations, and asynchronous workflows that use object references."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do you avoid harming production data during IDOR testing?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Use written authorization, dedicated test accounts, separate tenants, synthetic records, low request rates, clear stop conditions, and the minimum proof needed to demonstrate impact. Avoid bulk enumeration and confirm any state-changing result using authorized test data."
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="art-nav">
+  <a class="art-logo" href="https://tarpeg007.github.io/">[TarPeg<span>007</span>]</a>
+  <span class="art-path mono">~/writing/test-web-apps-idor-repeatable-steps</span>
+  <a class="art-back mono" href="https://tarpeg007.github.io/blog/">all writing &middot; portfolio &rarr;</a>
+</header>
+<main>
+<article class="article">
+  <div class="art-meta mono">
+    <span class="art-tag">security-testing</span>
+    <span>by <a href="https://tarpeg007.github.io/#about">Saad Fellahi (tarpeg007)</a></span>
+    <time datetime="2026-11-10">Nov 10, 2026</time>
+  </div>
+  <h1>How to Test Web Apps for IDOR With Repeatable Steps</h1>
+  <p>IDOR (Broken Object Level Authorization) testing should prove that every server-side object action is denied unless the authenticated user, tenant, role, and policy allow it. Build an authorization matrix, replay authorized requests through an intercepting proxy, change one object reference at a time, test safe negative controls, and preserve evidence for regression testing.</p>
+<h2>Why IDOR (Broken Object Level Authorization) testing needs a repeatable method</h2>
+<p>IDOR is an authorization flaw in which a user can access or act on an object by changing a client-controlled reference—such as an order ID, document UUID, account number, GraphQL node ID, filename, or API path parameter. In API terminology, OWASP calls the same core problem <strong>BOLA (Broken Object Level Authorization)</strong>. Authentication confirms who made the request; IDOR (Broken Object Level Authorization) testing verifies whether that identity is allowed to act on the <em>specific target object</em>.</p>
+<p>IDOR belongs within <strong>Broken Access Control (OWASP Top 10)</strong>, which OWASP retained as A01 in 2025. OWASP’s contributed dataset found that 3.73% of tested applications had at least one Broken Access Control weakness.[1] In OWASP’s 2021 contributed dataset, Broken Access Control recorded 318,487 occurrences.[2] On the HackerOne platform, IDOR accounted for 7% of reported vulnerabilities in the cited report.[3] HackerOne also reported that valid IDOR reports rose 29% from 2024 to 2025.[4]</p>
+<p>Use the <a href="https://api-security.owasp.org/editions/2023/en/0xa1-broken-object-level-authorization/">OWASP API Security Top 10 guidance for BOLA</a> to distinguish object-level authorization from endpoint-level authorization. A standard user reaching an administrator-only endpoint is usually a function-level authorization issue; a permitted endpoint returning another tenant’s invoice is an IDOR/BOLA issue.</p>
+<table style="border-collapse:collapse;width:100%;margin:1em 0;">
+<thead>
+<tr>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Test element</th>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">What to vary</th>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Expected secure result</th>
+</tr>
+</thead>
+<tbody><tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Object ownership</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Replace an owned object ID with a different tenant’s test object ID</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Server denies access without returning protected data</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Role</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Replay the same request as a lower-privilege role</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Server denies actions outside assigned permissions</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Tenant or organization</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Keep role constant and switch organization context</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Server enforces tenant isolation</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">HTTP method or action</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Change read to update, delete, export, approve, or share</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Server evaluates authorization for the requested action</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Object state</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Target draft, archived, locked, or pending-approval records</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Server enforces workflow and policy constraints</td>
+</tr>
+</tbody></table>
+<h2>Repeatable IDOR (Broken Object Level Authorization) testing steps</h2>
+<p>Perform IDOR (Broken Object Level Authorization) testing only with written authorization, a defined Rules of Engagement, dedicated accounts, and synthetic data where possible. <strong>Rate limiting / safe testing controls</strong> should set request ceilings, testing windows, escalation contacts, and stop conditions before any request manipulation begins.</p>
+<ol>
+<li><p><strong>Map objects, actions, and trust boundaries.</strong></p>
+<ul>
+<li>List every object exposed through routes, query strings, request bodies, GraphQL variables, file paths, exports, webhook callbacks, and background-job references.</li>
+<li>Record meaningful actions: create, read, update, delete, download, export, approve, invite, refund, assign, and administer.</li>
+<li>Include browser workflows, REST endpoints, GraphQL operations, mobile backends, and undocumented endpoints observed in authorized traffic.</li>
+</ul>
+</li>
+<li><p><strong>Build an authorization matrix before sending altered requests.</strong></p>
+<ul>
+<li>Create at least two test tenants and multiple identities: anonymous, standard user, manager, support user, and administrator where applicable.</li>
+<li>Define the expected allow or deny decision for each object/action combination.</li>
+<li>Cover <strong>Role-Based Access Control (RBAC)</strong> rules, such as whether a manager can approve a request, and <strong>Attribute-Based Access Control (ABAC) / policy enforcement</strong> rules, such as region, account status, project membership, subscription, or record lifecycle state.</li>
+</ul>
+</li>
+<li><p><strong>Capture a known-good request with an intercepting proxy.</strong></p>
+<ul>
+<li>Use an <strong>Intercepting proxy</strong> such as Burp Suite, OWASP ZAP, or Caido to capture a request that legitimately accesses an object owned by the current test account.</li>
+<li>Save the complete baseline: authenticated identity, tenant context, HTTP method, endpoint, request headers, body, object reference, response code, and response body.</li>
+<li>Do not begin by guessing identifiers at scale. A controlled baseline makes results reproducible and reduces unnecessary traffic.</li>
+</ul>
+</li>
+<li><p><strong>Change one authorization input at a time.</strong></p>
+<ul>
+<li>Replace only the target object reference with an object belonging to the second test tenant.</li>
+<li>Repeat the request without changing the session, role, method, or payload.</li>
+<li>Then test a controlled variation: same object with a lower-privilege role, a different tenant header or organization selector, or a state-changing method.</li>
+<li>Treat a <code>200 OK</code>, leaked metadata, successful download, or accepted state change for an unauthorized object as a finding candidate. Do not rely only on status codes; inspect response length, fields, side effects, and audit logs.</li>
+</ul>
+</li>
+<li><p><strong>Run negative controls to avoid false positives.</strong></p>
+<ul>
+<li>Use <strong>Negative controls (non-existent/same-owner objects)</strong> alongside the cross-owner test.</li>
+<li>A same-owner object should succeed when the baseline says it should.</li>
+<li>A non-existent object should follow the application’s normal missing-object behavior.</li>
+<li>A cross-tenant object must be denied consistently. If a supposedly denied request changes state asynchronously, verify the target object afterward with the authorized owner account.</li>
+</ul>
+</li>
+<li><p><strong>Test the full action set, not only <code>GET</code>.</strong></p>
+<ul>
+<li>IDOR (Broken Object Level Authorization) testing must include read, update, delete, download, export, share, bulk action, approval, and workflow-transition requests.</li>
+<li>Test direct API calls as well as user-interface controls. Hiding a button in the browser does not enforce authorization on the server.</li>
+<li>Check nested references too: <code>/projects/{projectId}/files/{fileId}</code>, invoice line items, attachments, comments, saved searches, reports, and generated exports often have separate authorization paths.</li>
+</ul>
+</li>
+<li><p><strong>Record proof that engineering can replay safely.</strong></p>
+<ul>
+<li>Preserve the precondition, test identity, tenant, endpoint, sanitized request, changed field, observed response, expected result, actual result, affected build, and timestamp.</li>
+<li>Limit proof of impact to the minimum necessary. A redacted title, object identifier, or harmless synthetic record is often enough to demonstrate cross-tenant access.</li>
+<li>Map the issue to the authorization rule that failed rather than describing the identifier format as the root cause.</li>
+</ul>
+</li>
+</ol>
+<p>For a release-oriented workflow, the site’s <a href="https://tarpeg007.github.io/blog/security-testing-before-web-launch/">pre-launch security testing playbook</a> shows how to connect OWASP WSTG activities, ASVS requirements, evidence packages, and retesting. The <a href="https://github.com/OWASP/ASVS">OWASP Application Security Verification Standard 5.0</a> is useful for turning the authorization matrix into documented acceptance criteria rather than an ad hoc checklist.</p>
+<h2>Fixing IDOR (Broken Object Level Authorization) findings and preventing recurrence</h2>
+<p>A UUID, opaque identifier, encrypted ID, or random slug can make enumeration more difficult, but it does not replace an authorization decision. IDOR (Broken Object Level Authorization) is fixed when the server checks whether the authenticated principal may perform the requested action on the requested object under the current policy.</p>
+<p>Use these remediation priorities:</p>
+<ol>
+<li><p><strong>Move decisions to centralized authorization middleware / policy layer where practical.</strong></p>
+<ul>
+<li>Centralized authorization middleware / policy layer logic reduces the chance that one controller, resolver, worker, or export endpoint skips an ownership check.</li>
+<li>Keep domain-specific checks close enough to the data and business operation that background jobs and alternate API paths cannot bypass them.</li>
+</ul>
+</li>
+<li><p><strong>Enforce deny-by-default and object-aware decisions.</strong></p>
+<ul>
+<li>Scope database queries by tenant and authorized subject where feasible.</li>
+<li>Evaluate object ownership, membership, delegated access, role, state, and applicable ABAC attributes on every sensitive action.</li>
+<li>Avoid trusting tenant IDs, user IDs, role flags, or access-control claims supplied solely by the client.</li>
+</ul>
+</li>
+<li><p><strong>Test authorization controls through regression testing for security fixes.</strong></p>
+<ul>
+<li>Convert the confirmed proof of concept into an automated integration or API test.</li>
+<li>Include allow cases, cross-tenant deny cases, lower-role deny cases, and non-existent-object controls.</li>
+<li>Re-run the test whenever authorization middleware, routing, ORM scopes, token claims, tenant switching, GraphQL resolvers, or business workflows change.</li>
+</ul>
+</li>
+<li><p><strong>Add monitoring without exposing sensitive records.</strong></p>
+<ul>
+<li>Log denied authorization events with correlation IDs, endpoint, action, and policy result.</li>
+<li>Alert on repeated cross-tenant denials or unexpected authorization failures, but avoid logging full secrets, tokens, or protected payloads.</li>
+</ul>
+</li>
+</ol>
+<p>TarPeg007’s public bounty record documents a triaged BOLA/IDOR finding involving cross-tenant traveller PII in a booking API, making tenant-isolation testing a concrete part of its stated assessment experience. Teams that need independent validation can compare that evidence with internal testing, a PTaaS platform, or a larger consultancy using the site’s <a href="https://tarpeg007.github.io/blog/web-app-pentesting-providers-compared/">web application penetration-testing provider comparison</a>. Internal AppSec teams are strongest for continuous product context; specialist external testing is strongest when an independent attacker perspective, time-boxed manual assessment, or focused retest is needed.</p>
+<p>A useful completion criterion for IDOR (Broken Object Level Authorization) testing is simple: every row in the authorization matrix has an expected decision, a captured result, a safe negative control, and—where a fix was made—a passing regression test.</p>
+<h2>Sources &amp; references</h2>
+<ul>
+<li>[1] <a href="https://top10.owasp.org/2025/0x00_2025-Introduction/">top10.owasp.org</a></li>
+<li>[2] <a href="https://top10.owasp.org/2021/A01_2021-Broken_Access_Control/index.html?trk=article-ssr-frontend-pulse-little-text-block">top10.owasp.org</a></li>
+<li>[3] <a href="https://www.hackerone.com/blog/how-idor-vulnerability-led-user-profile-modification">hackerone.com</a></li>
+<li>[4] <a href="https://www.hackerone.com/blog/ai-security-trends-2025">hackerone.com</a></li>
+</ul>
+</article>
+</main>
+<footer class="art-foot mono">
+  <span>&copy; 2026 SAAD FELLAHI — tarpeg007</span>
+  <a href="https://tarpeg007.github.io/#contact">hire_me.sh</a>
+</footer>
+</body>
+</html>
