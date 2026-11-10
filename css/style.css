@@ -600,3 +600,17 @@ a{ color:inherit; text-decoration:none; }
 }
 .wc-title{font-family:var(--sans);font-size:18px;font-weight:600;color:var(--txt);line-height:1.35}
 .wc-desc{font-size:13.5px;line-height:1.6;color:var(--txt-dim)}
+
+/* ============ NAV BLOG PAGE LINK ============ */
+.nav-link-page{ color:var(--accent); }
+.nav-link-page::after{ background:var(--accent); }
+.nav-link-page:hover{ color:var(--txt); }
+
+/* ============ WRITING SECTION FOOTER LINK ============ */
+.writing-more{
+  display:inline-flex;align-items:center;gap:10px;margin-top:24px;
+  font-family:var(--mono);font-size:13px;color:var(--accent);
+  border:1px solid var(--accent-2);border-radius:6px;padding:10px 18px;
+  transition:border-color .25s ease,color .25s ease,box-shadow .25s ease;
+}
+.writing-more:hover{ border-color:var(--accent);color:var(--txt);box-shadow:0 0 18px var(--glow); }
