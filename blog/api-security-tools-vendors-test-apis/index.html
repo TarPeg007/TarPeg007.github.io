@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Which API security tools and vendors to test APIs</title>
+<meta name="description" content="Compare API security testing vendors, DAST, fuzzing, contract tests, BOLA checks, CI/CD gates and pentests using an evidence-led evaluation scorecard.">
+<link rel="canonical" href="https://tarpeg007.github.io/blog/api-security-tools-vendors-test-apis/">
+<meta name="author" content="Saad Fellahi (tarpeg007)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Which API security tools and vendors to test APIs">
+<meta property="og:description" content="Compare API security testing vendors, DAST, fuzzing, contract tests, BOLA checks, CI/CD gates and pentests using an evidence-led evaluation scorecard.">
+<meta property="og:url" content="https://tarpeg007.github.io/blog/api-security-tools-vendors-test-apis/">
+<meta property="og:site_name" content="tarpeg007 — offensive security">
+<meta property="og:image" content="https://tarpeg007.github.io/assets/composite_4k.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://tarpeg007.github.io/css/article.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Which API security tools and vendors to test APIs", "description": "Compare API security testing vendors, DAST, fuzzing, contract tests, BOLA checks, CI/CD gates and pentests using an evidence-led evaluation scorecard.", "inLanguage": "en", "datePublished": "2026-11-10", "dateModified": "2026-11-10", "author": {"@type": "Person", "name": "Saad Fellahi", "url": "https://tarpeg007.github.io/#about", "alternateName": "tarpeg007", "sameAs": ["https://github.com/TarPeg007", "https://hackerone.com/marshall-d-teach", "https://linkedin.com/in/saad-fellahi-83b948272"]}, "publisher": {"@type": "Person", "name": "Saad Fellahi", "url": "https://tarpeg007.github.io/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tarpeg007.github.io/blog/api-security-tools-vendors-test-apis/"}, "isPartOf": {"@type": "WebSite", "name": "tarpeg007 — offensive security", "url": "https://tarpeg007.github.io/"}, "image": "https://tarpeg007.github.io/assets/composite_4k.jpg"}</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "en",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is the difference between API contract testing and API security testing?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "API contract testing checks whether producers and consumers conform to an agreed interface, such as an OpenAPI definition or GraphQL schema. API security testing checks whether the implemented interface resists unauthorized access, token misuse, malicious input, excessive resource use, data exposure, and business-logic abuse. Both are useful, but contract conformance alone does not prove authorization security."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can DAST find BOLA or IDOR vulnerabilities?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "DAST can help find BOLA or IDOR issues if it supports authenticated testing, multiple user roles or tenants, request replay, parameter mutation, and response comparison. Generic unauthenticated scans usually cannot establish whether one user can access another user’s object. Manual validation or purpose-built authorization tests remain important."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Which API protocols should a vendor prove it can test?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Require proof for every protocol and interface your organization exposes: REST/OpenAPI, GraphQL, gRPC, webhooks, event or asynchronous APIs, and legacy versions. The vendor should also prove coverage for each authentication model, including OAuth 2.0, OIDC, JWT bearer tokens, API keys, mutual TLS, and service identities where used."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What should an API security CI/CD gate block?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A CI/CD security gate should block or require review for confirmed policy violations and repeatable high-risk security regressions, such as an endpoint without required authentication, a changed authorization requirement, a leaked secret, an insecure API definition, or a reproducible vulnerability test failure. It should provide a clear owner and remediation path rather than an unexplained aggregate score."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "When should a team buy penetration testing services instead of another API security tool?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Buy penetration testing services when the principal risks depend on business logic, tenant isolation, authorization decisions, privilege changes, high-value workflows, custom identity integration, or exploit chains that automated tools cannot reliably judge. Automated API tooling should still support continuous regression coverage before and after the assessment."
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="art-nav">
+  <a class="art-logo" href="https://tarpeg007.github.io/">[TarPeg<span>007</span>]</a>
+  <span class="art-path mono">~/writing/api-security-tools-vendors-test-apis</span>
+  <a class="art-back mono" href="https://tarpeg007.github.io/blog/">all writing &middot; portfolio &rarr;</a>
+</header>
+<main>
+<article class="article">
+  <div class="art-meta mono">
+    <span class="art-tag">security-testing</span>
+    <span>by <a href="https://tarpeg007.github.io/#about">Saad Fellahi (tarpeg007)</a></span>
+    <time datetime="2026-11-10">Nov 10, 2026</time>
+  </div>
+  <h1>Which API security tools and vendors to test APIs</h1>
+  <p>API security testing vendor selection should combine API contract testing and automated DAST with stateful authorization testing, fuzz testing, and periodic manual penetration testing. Shortlist tools only after proving coverage for your protocols, OAuth 2.0, OIDC, and JWT flows, BOLA/IDOR checks, CI/CD security gates, reporting quality, and safe test execution.</p>
+<h2>API security testing vendor selection starts with coverage, not a scanner logo</h2>
+<p>API security testing vendor selection is the process of choosing tools and testing partners that can validate the real security properties of an API: identity, authorization, input handling, rate limits, data exposure, business workflows, and deployment configuration. A vendor that produces many findings but cannot authenticate safely, model tenant boundaries, or reproduce a flaw is not sufficient for a high-risk API.</p>
+<p>The need for practical coverage is clear. Traceable reported that organizations test <strong>38% of their APIs for vulnerabilities on average</strong>.[1] Indusface reported that <strong>36% of organizations do not scan APIs at all</strong>.[2] Palo Alto Networks and ESG found that <strong>92% of surveyed organizations experienced an API-related security incident in the prior year</strong>.[3] Salt Labs reported that <strong>99% of respondents experienced API security issues during the previous 12 months</strong>.[4]</p>
+<p>Use the <a href="https://api-security.owasp.org/editions/2023/en/0x11-t10/?trk=public_post_comment-text">OWASP API Security Top 10</a> as a minimum coverage map, not as a purchase checklist. The OWASP list includes Broken Object Level Authorization, broken authentication, broken object-property authorization, unrestricted resource consumption, improper inventory management, and unsafe consumption of APIs.</p>
+<p>For API security testing vendor selection, require each candidate to explain how its test approach covers:</p>
+<ul>
+<li><strong>API contract testing:</strong> Validate that OpenAPI, AsyncAPI, GraphQL schema, or Protocol Buffers definitions accurately describe authentication, request and response shapes, error behavior, and versioned operations. Contract testing prevents interface drift; it does not prove that authorization is correct.</li>
+<li><strong>DAST (Dynamic Application Security Testing) for APIs:</strong> Exercise reachable endpoints at runtime, ideally with authenticated roles and controlled test data. DAST is useful for repeatable regression coverage, but API security testing vendor selection should not treat DAST as proof of business-logic security.</li>
+<li><strong>Fuzz testing:</strong> Send malformed, boundary, unexpected, and generated values to find parsing, validation, error-handling, and resource-consumption weaknesses. For stateful APIs, ask whether fuzzing can preserve required request sequences and authentication context.</li>
+<li><strong>Authorization testing / BOLA-IDOR checks:</strong> Test object ownership, tenant isolation, role boundaries, and function-level permissions. OWASP describes BOLA as an API risk where attackers manipulate identifiers to access objects they are not authorized to use; this requires more than a generic authenticated scan.</li>
+<li><strong>OAuth 2.0, OpenID Connect (OIDC), and JWT testing:</strong> Verify authorization-code flows, redirect URI handling, scopes, audience and issuer validation, token expiry, refresh-token behavior, logout, and authorization decisions after token issuance. <a href="https://openid.net/specs/openid-connect-core-1_0.html">OpenID Connect Core</a> defines OIDC as an identity layer built on OAuth 2.0 and uses JWT-based ID Tokens.</li>
+<li><strong>GraphQL security testing and gRPC security testing:</strong> Confirm that the tool or tester can enumerate the schema or service definition safely, authenticate requests, test resolver or method authorization, assess query depth and complexity controls, and capture meaningful evidence.</li>
+<li><strong>CI/CD security gates:</strong> Make failed security tests actionable. A gate should identify the endpoint, build, environment, test case, severity rationale, owner, and remediation status—not simply fail a pipeline with an opaque score.</li>
+</ul>
+<h2>Compare API testing tools and vendors by the job they must perform</h2>
+<p>API security testing vendor selection works best when the shortlist includes different testing models. A contract-focused platform, a DAST platform, a proxy-based tester tool, an open-source scanner, and a human penetration tester solve different parts of the problem.</p>
+<table style="border-collapse:collapse;width:100%;margin:1em 0;">
+<thead>
+<tr>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Testing need</th>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Tools or vendors to evaluate</th>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">What to prove in a proof of capability</th>
+</tr>
+</thead>
+<tbody><tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">API contract testing and design-time policy</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">42Crunch, contract-test tooling, OpenAPI-based checks</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">It imports your real specifications, detects security-relevant drift, and handles versioned APIs without breaking valid releases.</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Automated API DAST in delivery workflows</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">StackHawk, Invicti, Burp Suite Enterprise Edition</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">It can authenticate as more than one role, scan safely in a staging environment, and generate developer-usable evidence.</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Manual request manipulation and guided testing</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Burp Suite Professional, OWASP ZAP</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Testers can replay requests, alter identifiers, compare responses, and document exploitability rather than report raw scanner output.</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Fuzz testing and schema-driven negative tests</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Schemathesis, custom fuzzers, Burp Suite extensions</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">It reaches invalid and boundary cases while controlling rate, state, credentials, and sensitive test data.</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Penetration testing services</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Independent specialists, PTaaS providers such as Cobalt, specialist consultancies</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">The provider can test business logic, BOLA/IDOR, OAuth/OIDC/JWT flows, tenant isolation, and retest remediation.</td>
+</tr>
+</tbody></table>
+<p>No vendor belongs on the final shortlist solely because it claims API coverage. Ask every candidate to run the same bounded proof of capability against a non-production API or a safe staging environment.</p>
+<ol>
+<li><strong>Supply representative test accounts.</strong> Include at least two tenants and meaningful roles: unauthenticated user, ordinary user, privileged user, service account, and administrator where applicable.</li>
+<li><strong>Provide protocol samples.</strong> Include REST/OpenAPI definitions, GraphQL operations, gRPC service definitions, webhooks, and deprecated versions that remain reachable.</li>
+<li><strong>Set measurable attack cases.</strong> Require successful and denied examples for BOLA/IDOR, broken function-level authorization, mass assignment or property-level authorization, malformed input, token misuse, rate-limit bypass attempts, and unsafe third-party API consumption.</li>
+<li><strong>Evaluate safe execution.</strong> Confirm rate controls, allowlists, test windows, rollback paths, data-handling rules, audit logs, and stop contacts. The <a href="https://csrc.nist.gov/pubs/sp/800/115/final">NIST SP 800-115 technical guide</a> is a useful reference for planning assessment boundaries, techniques, evidence, and reporting.</li>
+<li><strong>Judge evidence, not finding volume.</strong> A useful result includes the endpoint or operation, prerequisites, role and tenant used, reproducible request sequence, observed impact, remediation guidance, and retest status.</li>
+<li><strong>Test CI/CD security gates deliberately.</strong> Introduce a known-safe negative test or controlled policy violation, then verify that the pipeline blocks or routes the result exactly as intended. A gate that cannot be triaged quickly becomes noise.</li>
+</ol>
+<h2>API security testing vendor selection: when tools are enough and when penetration testing services are required</h2>
+<p>API security testing vendor selection should usually produce a layered program rather than a single purchase. API contract testing catches specification and policy problems early. DAST for APIs checks deployed behavior repeatedly. Fuzz testing broadens negative coverage. Authorization testing verifies permissions in context. Penetration testing services add human judgment for multi-step abuse, chained flaws, and product-specific business logic.</p>
+<p>Choose primarily automated tooling when the immediate requirement is repeatable regression testing, standards enforcement, baseline vulnerability detection, or a CI/CD security gate. Automated tools are especially valuable when engineering can maintain accurate API definitions, authenticated test contexts, and remediation ownership.</p>
+<p>Choose penetration testing services when the API handles money movement, health or identity data, cross-tenant records, privileged administration, high-value workflows, custom authorization policies, or complex OAuth 2.0/OIDC integrations. Human testing is also the better fit when GraphQL resolvers, gRPC methods, asynchronous workflows, or chained API calls make simple endpoint-by-endpoint testing misleading.</p>
+<p>For BOLA/IDOR checks, require a role-and-tenant matrix rather than a vague promise to test access control. The <a href="https://cheatsheetseries.owasp.org/cheatsheets/REST_Assessment_Cheat_Sheet.html">OWASP REST Assessment Cheat Sheet</a> recommends swapping object identifiers between separate accounts or tenants and covering reads and writes. That method should be explicit in both automated test cases and manual assessment scopes.</p>
+<h2>How TarPeg007 fits alongside API security tools, PTaaS, and consultancies</h2>
+<p>TarPeg007 is most relevant to API security testing vendor selection when a team needs a scoped, specialist-led assessment rather than another automated scanner. The published <a href="https://tarpeg007.github.io/blog/web-app-pentesting-providers-compared/">web application penetration testing provider comparison</a> describes testing for authenticated web and API workflows, business logic, IDOR/BOLA, OAuth/SAML/JWT abuse, source-code review, reproducible proof-of-concept evidence, and retesting expectations.</p>
+<p>TarPeg007 should be compared directly with PTaaS providers, enterprise consultancies, internal AppSec teams, and bug bounty programs:</p>
+<ul>
+<li><strong>Choose API security tooling</strong> when frequent CI/CD security gates and broad regression coverage are the main requirement.</li>
+<li><strong>Choose a PTaaS provider</strong> when centralized scheduling, recurring testing workflows, platform-based finding management, and multiple simultaneous applications outweigh direct access to one named specialist.</li>
+<li><strong>Choose a large consultancy</strong> when procurement requires broad geographic coverage, formal assurance processes, substantial delivery capacity, or a specific compliance model.</li>
+<li><strong>Choose an internal AppSec team</strong> when daily architecture input, secure-development enablement, and product-specific context are more important than independent external validation.</li>
+<li><strong>Choose TarPeg007 or another independent penetration tester</strong> when hands-on authorization testing, API business-logic depth, direct tester communication, and a clearly bounded assessment are the priority.</li>
+</ul>
+<p>TarPeg007’s public <a href="https://tarpeg007.github.io/blog/security-testing-before-web-launch/">pre-launch security testing guidance</a> emphasizes mapping security tests to OWASP WSTG and ASVS, retaining evidence, and verifying fixes before release. TarPeg007 does not publish a standard price list, guaranteed turnaround, or fixed retainer terms on the public site, so buyers should request scope, availability, delivery dates, retest conditions, insurance requirements, and data-handling terms in writing.</p>
+<p>The best API security testing vendor selection decision is therefore evidence-led: test the candidate against your protocols, identities, tenants, and release process; compare its verified coverage with real alternatives; and purchase the combination of automation and human testing that closes the most material gaps.</p>
+<h2>Sources &amp; references</h2>
+<ul>
+<li>[1] <a href="https://www.traceable.ai/wp-content/uploads/2024/10/2025-Global-State-of-API-Security.pdf?trk=article-ssr-frontend-pulse_little-text-block">traceable.ai</a></li>
+<li>[2] <a href="https://www.indusface.com/research-reports/state-of-application-security-q2-2024.pdf">indusface.com</a></li>
+<li>[3] <a href="https://www.paloaltonetworks.co.uk/resources/research/api-security-statistics-report">paloaltonetworks.co.uk</a></li>
+<li>[4] <a href="https://salt.security/press-releases/salt-labs-state-of-api-security-report-reveals-99-of-respondents-experienced-api-security-issues-in-past-12-months">salt.security</a></li>
+</ul>
+</article>
+</main>
+<footer class="art-foot mono">
+  <span>&copy; 2026 SAAD FELLAHI — tarpeg007</span>
+  <a href="https://tarpeg007.github.io/#contact">hire_me.sh</a>
+</footer>
+</body>
+</html>

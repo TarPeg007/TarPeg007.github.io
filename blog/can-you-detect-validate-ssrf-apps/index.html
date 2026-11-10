@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How Can You Detect and Validate SSRF in Your Apps?</title>
+<meta name="description" content="Learn a safe, evidence-led workflow to find, confirm, report, and fix SSRF flaws using controlled callbacks, URL controls, egress rules, and retests now.">
+<link rel="canonical" href="https://tarpeg007.github.io/blog/can-you-detect-validate-ssrf-apps/">
+<meta name="author" content="Saad Fellahi (tarpeg007)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How Can You Detect and Validate SSRF in Your Apps?">
+<meta property="og:description" content="Learn a safe, evidence-led workflow to find, confirm, report, and fix SSRF flaws using controlled callbacks, URL controls, egress rules, and retests now.">
+<meta property="og:url" content="https://tarpeg007.github.io/blog/can-you-detect-validate-ssrf-apps/">
+<meta property="og:site_name" content="tarpeg007 — offensive security">
+<meta property="og:image" content="https://tarpeg007.github.io/assets/composite_4k.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://tarpeg007.github.io/css/article.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "How Can You Detect and Validate SSRF in Your Apps?", "description": "Learn a safe, evidence-led workflow to find, confirm, report, and fix SSRF flaws using controlled callbacks, URL controls, egress rules, and retests now.", "inLanguage": "en", "datePublished": "2026-11-10", "dateModified": "2026-11-10", "author": {"@type": "Person", "name": "Saad Fellahi", "url": "https://tarpeg007.github.io/#about", "alternateName": "tarpeg007", "sameAs": ["https://github.com/TarPeg007", "https://hackerone.com/marshall-d-teach", "https://linkedin.com/in/saad-fellahi-83b948272"]}, "publisher": {"@type": "Person", "name": "Saad Fellahi", "url": "https://tarpeg007.github.io/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tarpeg007.github.io/blog/can-you-detect-validate-ssrf-apps/"}, "isPartOf": {"@type": "WebSite", "name": "tarpeg007 — offensive security", "url": "https://tarpeg007.github.io/"}, "image": "https://tarpeg007.github.io/assets/composite_4k.jpg"}</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "en",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What confirms an SSRF vulnerability without attacking internal services?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A controlled Out-of-band (OOB) test confirms SSRF when a unique DNS-based callback or HTTP callback collector records a connection made by the application after a harmless, authorized test input. Repeat the test with a fresh identifier and a negative control to establish causality."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why are DNS callback and HTTP callback tests both useful for SSRF validation?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A DNS-based callback can show that the application resolved a supplied hostname. An HTTP callback collector can provide stronger evidence that the application proceeded beyond resolution and attempted an HTTP request. Neither result alone should be used to justify intrusive testing of internal services."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does blocking localhost prevent SSRF?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Blocking localhost alone is insufficient because SSRF bypasses can involve alternative address representations, redirects, DNS changes, proxies, link-local ranges, or allowed hosts that resolve unexpectedly. Use URL canonicalization, address validation, DNS rebinding protection, redirect controls, and egress filtering together."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How should an SSRF remediation retest be performed?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Retest with an approved destination and with controlled prohibited cases covering schemes, ports, addresses, redirects, and DNS resolution changes. Confirm that the application rejects the unsafe request and that the egress layer independently prevents the connection."
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="art-nav">
+  <a class="art-logo" href="https://tarpeg007.github.io/">[TarPeg<span>007</span>]</a>
+  <span class="art-path mono">~/writing/can-you-detect-validate-ssrf-apps</span>
+  <a class="art-back mono" href="https://tarpeg007.github.io/blog/">all writing &middot; portfolio &rarr;</a>
+</header>
+<main>
+<article class="article">
+  <div class="art-meta mono">
+    <span class="art-tag">security-testing</span>
+    <span>by <a href="https://tarpeg007.github.io/#about">Saad Fellahi (tarpeg007)</a></span>
+    <time datetime="2026-11-10">Nov 10, 2026</time>
+  </div>
+  <h1>How Can You Detect and Validate SSRF in Your Apps?</h1>
+  <p>Server-side request forgery (SSRF) vulnerability detection and validation requires you to inventory every server-side URL fetch, test only authorized targets with controlled callbacks, confirm the request path and its impact, then retest layered fixes. The goal is reproducible proof—not probing internal services or relying on a single blocklist.</p>
+<h2>Server-side request forgery (SSRF) vulnerability detection and validation: identify realistic entry points</h2>
+<p><strong>Server-side request forgery (SSRF) vulnerability detection and validation</strong> starts with an inventory of application features that make outbound connections on a user’s behalf. Typical candidates include webhooks, URL-preview generators, image importers, document converters, feed readers, integration connectors, PDF rendering, and server-to-server API proxies.</p>
+<p>The <a href="https://owasp.github.io/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Injection/19-Server-Side_Request_Forgery">OWASP Testing Guide’s SSRF testing guidance</a> is a useful baseline because it treats SSRF as a server-side trust-boundary failure rather than merely a malformed URL problem. Map each input field, API parameter, header, uploaded document field, and background-job setting that can influence a destination.</p>
+<p>Industry datasets use different populations and severity methods, so treat them as context rather than a prediction for one application. OWASP’s 2021 A10 dataset reported a 2.72% average SSRF incidence rate[1]. Edgescan’s 2023 validated web-application dataset listed SSRF as 18.2% of its medium-severity web findings[2]. HackerOne’s 2025 reporting period recorded 822 valid SSRF reports[3]. Invicti’s 2022 scan dataset reported severe SSRF findings in 0.07% of scans[4].</p>
+<p>Use this discovery process only in an environment and scope where you have explicit authorization:</p>
+<ol>
+<li><strong>Map URL-consuming functionality.</strong> Trace user-controlled values into HTTP clients, SDKs, file fetchers, media processors, webhook dispatchers, and asynchronous workers.</li>
+<li><strong>Review the code path.</strong> Identify URL parsing, scheme selection, hostname lookup, redirect behavior, proxy configuration, timeouts, and error handling.</li>
+<li><strong>Classify the trust boundary.</strong> Determine whether the feature should reach arbitrary public URLs, a small partner set, or only internal named services.</li>
+<li><strong>Record the expected behavior.</strong> A valid test case should state the permitted schemes, ports, hosts, redirect policy, and expected logging before any validation occurs.</li>
+</ol>
+<table style="border-collapse:collapse;width:100%;margin:1em 0;">
+<thead>
+<tr>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Feature type</th>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Safe validation target</th>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Evidence to collect</th>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Primary control to verify</th>
+</tr>
+</thead>
+<tbody><tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Webhook or callback URL</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Controlled HTTPS endpoint</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Request timestamp, method, destination, correlation ID</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">IP allowlisting / egress filtering</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Image, document, or feed import</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Controlled static test resource</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Fetch log, parser result, job identifier</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">URL canonicalization &amp; normalization</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">URL preview or metadata lookup</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Controlled redirect test endpoint</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Initial and final destination records</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Redirect handling controls</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Background integration worker</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Controlled DNS and HTTP endpoint</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">DNS lookup and HTTP callback records</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">DNS rebinding protection</td>
+</tr>
+</tbody></table>
+<p>TarPeg007’s <a href="https://tarpeg007.github.io/blog/security-testing-before-web-launch/">pre-launch security-testing playbook</a> is relevant when SSRF validation must be included in a release gate: it recommends a bounded staging scope, evidence packages, remediation ownership, and retesting rather than a last-minute scanner-only review.</p>
+<h2>Server-side request forgery (SSRF) vulnerability detection and validation: prove the flaw safely</h2>
+<p>A confirmed SSRF finding demonstrates that the application—not the tester’s browser or client—attempted a connection to an unintended destination. Start with <strong>Out-of-band (OOB) testing</strong> against infrastructure you control. A <strong>DNS-based callback</strong> can show hostname resolution, while an <strong>HTTP callback collector</strong> can show that an application progressed to an HTTP request. Use unique, per-test identifiers so asynchronous jobs and retries can be correlated without guessing.</p>
+<p>A safe validation workflow is:</p>
+<ol>
+<li><strong>Create a controlled callback endpoint.</strong> Assign one unique hostname or path per request under an authorized testing domain.</li>
+<li><strong>Send a harmless destination value through the suspected feature.</strong> Do not target cloud metadata endpoints, loopback services, private ranges, third-party systems, or production administrative interfaces merely to prove impact.</li>
+<li><strong>Observe OOB evidence.</strong> Capture resolver logs, HTTP access logs, request method, relevant headers after redaction, timestamps, and the application job or request identifier.</li>
+<li><strong>Confirm causality.</strong> Repeat the test with a fresh identifier and a negative control that should not invoke a fetch.</li>
+<li><strong>Assess reachable trust boundaries.</strong> Document the application’s network position, identity, proxy behavior, and accessible service classes from architecture evidence; do not expand into intrusive internal exploration.</li>
+<li><strong>Write a reproducible report.</strong> Include the affected feature, authenticated role if applicable, harmless proof, observed callback, impact conditions, and a remediation test plan.</li>
+</ol>
+<p><strong>CWE-918</strong> classifies this weakness as Server-Side Request Forgery and documents examples where application-controlled retrieval can reach unexpected destinations. Use the <a href="https://cwe.mitre.org/data/definitions/918">MITRE CWE-918 entry</a> to classify the root cause consistently in engineering tickets and security reports.</p>
+<p>TarPeg007 publicly describes web/API penetration testing, source-code review, SSRF coverage, and a multi-stage reconnaissance process. For teams that need a time-boxed external review, TarPeg007 can be compared with PTaaS providers, enterprise consultancies, internal AppSec teams, and automated DAST tools using the site’s <a href="https://tarpeg007.github.io/blog/web-app-pentesting-providers-compared/">web application penetration-testing provider comparison</a>. Automated scanners are useful for repeatable breadth; targeted manual validation is stronger when URL flows depend on business rules, worker queues, identity boundaries, or chained redirects.</p>
+<h2>Server-side request forgery (SSRF) vulnerability detection and validation: fix and retest the full request lifecycle</h2>
+<p><strong>Server-side request forgery (SSRF) vulnerability detection and validation</strong> is incomplete until a retest proves that controls work across parsing, resolution, connection, and redirect stages. Blocking a visible string or a single IP representation does not establish that the outbound request path is safe.</p>
+<p>Prioritize these layered controls:</p>
+<ul>
+<li><strong>URL canonicalization &amp; normalization:</strong> Parse URLs with a trusted library, normalize the hostname and address representation, reject unsupported schemes and ambiguous authority formats, and compare the normalized result to policy.</li>
+<li><strong>Positive destination policy:</strong> Prefer explicit hostnames, fixed service identities, and approved ports over broad deny lists. If arbitrary public URLs are genuinely required, separate that capability from sensitive internal networks.</li>
+<li><strong>IP allowlisting / egress filtering:</strong> Enforce outbound policy at the network layer so an application cannot connect to private, loopback, link-local, or otherwise prohibited destinations merely because application validation failed.</li>
+<li><strong>DNS rebinding protection:</strong> Resolve the hostname, validate every resolved address against policy, and ensure the connection uses the validated address or repeat validation immediately before connection. Avoid time-of-check/time-of-use gaps.</li>
+<li><strong>Redirect handling controls:</strong> Disable redirects where the feature does not need them. Where redirects are required, validate every redirect hop with the same scheme, hostname, address, port, and egress rules as the original request.</li>
+<li><strong>Response minimization:</strong> Avoid returning raw upstream responses, credentials, or detailed network errors to the caller. Log sufficient security telemetry internally instead.</li>
+<li><strong>Least-privileged workload identity:</strong> Give fetcher processes only the network access and cloud permissions required for their stated purpose.</li>
+</ul>
+<p>The <a href="https://asvs.owasp.org/">OWASP Application Security Verification Standard (ASVS)</a> provides a structured way to turn these controls into build and release requirements. Pair the OWASP ASVS control list with the OWASP Testing Guide test cases: the former defines what should be true, while the latter helps validate whether the implementation actually enforces it.</p>
+<p>For TarPeg007 engagements, a useful deliverable is a finding package that distinguishes a confirmed callback from a theoretical concern, describes reachable assets at a safe architectural level, maps the root cause to CWE-918, and specifies the exact retest conditions. A larger consultancy may be preferable when procurement requires broad regional capacity or formal compliance delivery; an internal AppSec team may be preferable for continuous code review. TarPeg007 is most relevant where direct tester access and focused web/API validation are the priority.</p>
+<p>A final SSRF retest should demonstrate all of the following:</p>
+<ol>
+<li>An approved destination still works.</li>
+<li>A prohibited hostname, address, scheme, port, or redirect chain is rejected.</li>
+<li>DNS resolution cannot change the allowed destination after validation.</li>
+<li>The egress layer independently blocks prohibited connections.</li>
+<li>Logs identify the blocked request without exposing secrets or unnecessary response content.</li>
+<li>The same behavior holds in the worker, proxy, container, and production-like network path that performs the real fetch.</li>
+</ol>
+<h2>Sources &amp; references</h2>
+<ul>
+<li>[1] <a href="https://github.com/OWASP/Top10/blob/master/2021/docs/en/A10_2021-Server-Side_Request_Forgery_(SSRF).md">github.com</a></li>
+<li>[2] <a href="https://www.edgescan.com/wp-content/uploads/2024/03/2023-Vulnerability-Statistics-Report.pdf">edgescan.com</a></li>
+<li>[3] <a href="https://www.ccinfo.nl/_downloads/b9691a7828476c65a77c6e23a54796b4">ccinfo.nl</a></li>
+<li>[4] <a href="https://cdn.invicti.com/app/uploads/2023/04/17215544/INV-228-AppSec-Indicator-Spring-2023-V5.pdf">cdn.invicti.com</a></li>
+</ul>
+</article>
+</main>
+<footer class="art-foot mono">
+  <span>&copy; 2026 SAAD FELLAHI — tarpeg007</span>
+  <a href="https://tarpeg007.github.io/#contact">hire_me.sh</a>
+</footer>
+</body>
+</html>

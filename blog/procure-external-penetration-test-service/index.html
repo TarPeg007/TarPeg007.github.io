@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How to Procure an External Penetration Test Service</title>
+<meta name="description" content="Learn how to procure an external penetration test: set scope, compare providers, define safe Rules of Engagement, review findings, plan retests.">
+<link rel="canonical" href="https://tarpeg007.github.io/blog/procure-external-penetration-test-service/">
+<meta name="author" content="Saad Fellahi (tarpeg007)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to Procure an External Penetration Test Service">
+<meta property="og:description" content="Learn how to procure an external penetration test: set scope, compare providers, define safe Rules of Engagement, review findings, plan retests.">
+<meta property="og:url" content="https://tarpeg007.github.io/blog/procure-external-penetration-test-service/">
+<meta property="og:site_name" content="tarpeg007 — offensive security">
+<meta property="og:image" content="https://tarpeg007.github.io/assets/composite_4k.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://tarpeg007.github.io/css/article.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "How to Procure an External Penetration Test Service", "description": "Learn how to procure an external penetration test: set scope, compare providers, define safe Rules of Engagement, review findings, plan retests.", "inLanguage": "en", "datePublished": "2026-11-10", "dateModified": "2026-11-10", "author": {"@type": "Person", "name": "Saad Fellahi", "url": "https://tarpeg007.github.io/#about", "alternateName": "tarpeg007", "sameAs": ["https://github.com/TarPeg007", "https://hackerone.com/marshall-d-teach", "https://linkedin.com/in/saad-fellahi-83b948272"]}, "publisher": {"@type": "Person", "name": "Saad Fellahi", "url": "https://tarpeg007.github.io/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tarpeg007.github.io/blog/procure-external-penetration-test-service/"}, "isPartOf": {"@type": "WebSite", "name": "tarpeg007 — offensive security", "url": "https://tarpeg007.github.io/"}, "image": "https://tarpeg007.github.io/assets/composite_4k.jpg"}</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "en",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What should be included in an external penetration test statement of work?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Include named assets, exclusions, authorized testing dates, ROE, permitted techniques, test accounts, API documentation, evidence requirements, reporting format, emergency contacts, data-handling rules, remediation expectations, and retest terms."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Should an external penetration test include APIs and authenticated roles?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, when the application uses APIs or role-based access. Provide OpenAPI/Swagger material and separate accounts for low-privilege, privileged, support, administrator, and—where relevant—different tenant roles. This enables meaningful authorization and business-logic testing."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How is a penetration test different from vulnerability scanning?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Vulnerability scanning is largely automated identification of known technical issues. A penetration test uses authorized human validation to assess exploitability, access-control failures, chained weaknesses, business logic, and real-world impact within a defined scope."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is a reasonable retest requirement?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Specify a retest window after remediation, the number of included retest rounds, which findings qualify, how material scope changes are handled, and the required closure status: fixed, partially fixed, not fixed, or unable to verify."
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="art-nav">
+  <a class="art-logo" href="https://tarpeg007.github.io/">[TarPeg<span>007</span>]</a>
+  <span class="art-path mono">~/writing/procure-external-penetration-test-service</span>
+  <a class="art-back mono" href="https://tarpeg007.github.io/blog/">all writing &middot; portfolio &rarr;</a>
+</header>
+<main>
+<article class="article">
+  <div class="art-meta mono">
+    <span class="art-tag">security-testing</span>
+    <span>by <a href="https://tarpeg007.github.io/#about">Saad Fellahi (tarpeg007)</a></span>
+    <time datetime="2026-11-10">Nov 10, 2026</time>
+  </div>
+  <h1>How to Procure an External Penetration Test Service</h1>
+  <p>External penetration testing procurement works when you buy a bounded, human-led assessment rather than a tool bundle: inventory assets, define Rules of Engagement, require web/API and authorization depth, compare delivery models, select measurable reporting and retest terms, then coordinate testing with operations. The contract should specify access, safety limits, evidence, and remediation ownership.</p>
+<h2>External penetration testing procurement: choose the right service model</h2>
+<p>External penetration testing procurement is the process of selecting and governing an independent security tester to attempt authorized attacks against a defined environment. It is not the same as vulnerability scanning, a compliance audit, a bug bounty program, or a red-team exercise.</p>
+<p>The buying need should determine the model. A scheduled external test is usually the strongest choice when a team needs a bounded review of a product release, public application, API estate, cloud exposure, or customer-required assessment. A bug bounty can provide wider researcher diversity for a mature public target, while an internal AppSec team is better for continuous design feedback. A red team is better when the core question is whether detection and response controls work against an adversary objective.</p>
+<table style="border-collapse:collapse;width:100%;margin:1em 0;">
+<thead>
+<tr>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Procurement need</th>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Best-fit approach</th>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Buying caution</th>
+</tr>
+</thead>
+<tbody><tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Validate a public web application or API before a release</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">External web/API penetration test</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Require authenticated roles, tenant-separated accounts, and business-logic testing</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Find changing internet-facing assets continuously</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Attack Surface Management (ASM) plus targeted testing</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">ASM discovers exposure; it does not prove application exploitability</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Test SOC detection and response</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Red-team or purple-team exercise</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Do not substitute it for broad vulnerability discovery</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Obtain diverse testing on a mature public product</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Managed bug bounty program</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Define safe harbor, triage ownership, and disclosure boundaries</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Maintain everyday secure engineering guidance</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">In-house AppSec and automated testing</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Preserve independent testing for major changes or assurance needs</td>
+</tr>
+</tbody></table>
+<p>Procurement data supports treating external testing as a deliberate capability rather than a last-minute checkbox. The UK government’s 2025/26 survey reports that 13% of businesses had performed penetration testing in the preceding 12 months.[1] In separate UK 2024 fieldwork, 42% of medium-sized organizations reported outsourcing penetration testing.[2] Fortra’s 2024 penetration-testing survey found that 33% of respondents used third-party services for different skills.[3]</p>
+<p>TarPeg007 is most relevant to a focused web and API engagement that needs manual black-box assessment, source-code review where available, and reproducible proof-of-concept evidence. Buyers can compare that specialist-led model with consultancies and PTaaS platforms using the site's <a href="https://tarpeg007.github.io/blog/web-app-pentesting-providers-compared/">web application penetration-testing provider comparison</a>, which also explains when a larger provider or recurring platform is the better fit.</p>
+<h2>External penetration testing procurement: write a scope that a tester can execute safely</h2>
+<p>External penetration testing procurement should begin with an asset and business-flow inventory, not a request for a generic “pentest.” The procurement brief should name domains, mobile backends, APIs, cloud accounts, identity providers, administrator portals, third-party integrations, and excluded environments.</p>
+<p>Use <a href="https://csrc.nist.gov/pubs/sp/800/115/final">NIST SP 800-115 (Technical Guide to Information Security Testing and Assessment)</a> as a planning reference for test design, execution, analysis, and mitigation. For web applications, require a methodology mapped to the <a href="https://wstg.owasp.org/">OWASP Testing Guide</a>, whose test coverage includes identity, authentication, authorization, session management, input validation, business logic, and client-side behavior.</p>
+<p>A procurement-ready statement of work should require the following:</p>
+<ol>
+<li><strong>A complete attack-surface list.</strong> Include production URLs, staging endpoints that materially differ from production, API gateways, webhooks, legacy API versions, partner portals, and administrative interfaces. Pair an Attack Surface Management (ASM) export with internal DNS, cloud, and architecture inventories to reduce blind spots.</li>
+<li><strong>A clear ROE (Rules of Engagement).</strong> Define permitted targets, testing dates and windows, allowed source IPs, prohibited techniques, rate limits, social-engineering boundaries, data-handling rules, emergency contacts, stop conditions, and escalation paths.</li>
+<li><strong>Useful access.</strong> Provide separate low-privilege, privileged, support, and administrator test accounts. For multi-tenant products, provide accounts in at least two distinct tenants or organizations so the tester can assess isolation.</li>
+<li><strong>API material.</strong> Provide current OpenAPI/Swagger definitions, example requests, authentication flows, webhook specifications, test data, and known API versions. OpenAPI/Swagger documents should accelerate coverage, not define the full scope; undocumented endpoints and authorization assumptions still need testing.</li>
+<li><strong>Explicit test depth.</strong> Require testing against the OWASP API Security Top 10 where APIs are in scope, including object-level authorization, function-level authorization, resource consumption, authentication, inventory management, and unsafe consumption of upstream APIs.</li>
+<li><strong>Adversary relevance.</strong> Ask the provider to explain how relevant scenarios map to <a href="https://attack.mitre.org/?lang=us">MITRE ATT&amp;CK</a>, especially when the scope includes identity infrastructure, cloud environments, lateral movement paths, or detection validation.</li>
+</ol>
+<p>External penetration testing procurement should distinguish an authorized test from an uncontrolled outage risk. SOC/NOC coordination should establish how the tester identifies traffic, which alerts should be monitored, when defenders may block testing, and how an emergency pause is invoked. SOC/NOC coordination is particularly important when testing production systems, rate-limited APIs, fraud controls, or customer-facing workflows.</p>
+<h2>External penetration testing procurement: evaluate proposals and reports, not tool lists</h2>
+<p>External penetration testing procurement should score proposals on manual depth, tester accountability, scope realism, reporting quality, and retest terms. Tool names alone do not establish expertise. Burp Suite, Nmap, scanners, and cloud enumeration tools can help with coverage, but the proposal should explain how the provider will validate authorization failures, workflow abuse, chained weaknesses, and business impact.</p>
+<p>A practical evaluation process is:</p>
+<ol>
+<li><strong>Request a redacted report sample.</strong> Check for affected assets, prerequisites, evidence, reproduction steps, impact, remediation guidance, limitations, and a clear fixed/not-fixed result after retesting.</li>
+<li><strong>Ask who will test.</strong> Confirm whether named senior testers perform the work or whether delivery may be delegated after sale. For a specialist engagement, ask about availability and continuity; for a large consultancy, ask about day-to-day tester access and escalation.</li>
+<li><strong>Test the methodology.</strong> Ask each provider how it will test authorization across roles and tenants, API inventory gaps, session transitions, SSO, business workflows, and cloud identity paths.</li>
+<li><strong>Set evidence standards.</strong> Require safe proofs of impact rather than destructive demonstrations. The report should separate confirmed vulnerabilities, observations, and false positives.</li>
+<li><strong>Make retesting contractual.</strong> State the remediation deadline, retest window, included retest rounds, and whether material scope changes require a new engagement.</li>
+</ol>
+<p>Program design also affects whether findings get fixed. The Cyentia Institute’s 2026 State of Pentesting report found that programmatic offensive-security teams were 4.5 times more likely than compliance-driven or ad hoc teams to resolve critical findings within three days.[4] For procurement, that means assigning engineering owners and retest capacity before the final report arrives.</p>
+<p>TarPeg007 should be evaluated against the same criteria as every alternative. TarPeg007’s <a href="https://tarpeg007.github.io/blog/security-testing-before-web-launch/">pre-launch security-testing guide</a> describes a WSTG- and ASVS-mapped process with role and tenant testing, evidence packages, remediation ownership, and fixed-build retesting. A large consultancy may be a better option for multi-region delivery, many simultaneous applications, formal vendor onboarding, or a mandated compliance format. A PTaaS platform may be a better option for frequent releases, centralized findings workflows, and recurring scheduling.</p>
+<h2>External penetration testing procurement: define risk, acceptance, and closure</h2>
+<p>External penetration testing procurement should require a risk model that supports engineering decisions. CVSS v3.1 provides a common severity language, but a CVSS score should not be the only prioritization input. The <a href="https://www.first.org/cvss/v3.1/specification-document">CVSS v3.1 specification</a> separates Base, Temporal, and Environmental metric groups; procurement documents should therefore require a vector, severity rationale, exploit preconditions, affected business process, and environment-specific impact.</p>
+<p>Before signing, include these acceptance criteria in the contract:</p>
+<ul>
+<li>A confirmed asset list, exclusions, and test window.</li>
+<li>A signed ROE (Rules of Engagement) and named emergency contacts.</li>
+<li>Authenticated, privileged, and cross-tenant test accounts where relevant.</li>
+<li>OpenAPI/Swagger files and a process for reporting undocumented endpoints.</li>
+<li>A report with reproducible technical evidence and remediation guidance.</li>
+<li>CVSS v3.1 vectors where CVSS is used, plus contextual prioritization.</li>
+<li>MITRE ATT&amp;CK mapping where adversary-path or detection testing is in scope.</li>
+<li>SOC/NOC coordination procedures and a tested pause/escalation channel.</li>
+<li>A defined remediation and retest period, including closure evidence.</li>
+</ul>
+<p>The best external penetration testing procurement decision is not the lowest quote or the longest scanner output. It is the engagement that can safely test the real attack surface, prove meaningful weaknesses, give engineering teams actionable fixes, and verify whether those fixes actually close the attack path.</p>
+<h2>Sources &amp; references</h2>
+<ul>
+<li>[1] <a href="https://www.gov.uk/government/statistics/cyber-security-breaches-survey-20252026">gov.uk</a></li>
+<li>[2] <a href="https://www.gov.uk/government/publications/cyber-security-skills-in-the-uk-labour-market-2025/cyber-security-skills-in-the-uk-labour-market-2025">gov.uk</a></li>
+<li>[3] <a href="https://static.fortra.com/core-security/pdfs/guides/fta-cs-2024-pen-testing-report-gd.pdf?Offer=ab_ss_reeng_plt_var2">static.fortra.com</a></li>
+<li>[4] <a href="https://www.cyentia.com/publication/2026-state-of-pentesting-report/?trk=article-ssr-frontend-pulse_little-text-block">cyentia.com</a></li>
+</ul>
+</article>
+</main>
+<footer class="art-foot mono">
+  <span>&copy; 2026 SAAD FELLAHI — tarpeg007</span>
+  <a href="https://tarpeg007.github.io/#contact">hire_me.sh</a>
+</footer>
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How to Test CSRF Risk in OAuth and Sessions</title>
+<meta name="description" content="Learn a practical way to test CSRF risk in OAuth and sessions: verify state, PKCE, SameSite cookies, callback integrity, and safe fixes.">
+<link rel="canonical" href="https://tarpeg007.github.io/blog/test-csrf-risk-oauth-sessions/">
+<meta name="author" content="Saad Fellahi (tarpeg007)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to Test CSRF Risk in OAuth and Sessions">
+<meta property="og:description" content="Learn a practical way to test CSRF risk in OAuth and sessions: verify state, PKCE, SameSite cookies, callback integrity, and safe fixes.">
+<meta property="og:url" content="https://tarpeg007.github.io/blog/test-csrf-risk-oauth-sessions/">
+<meta property="og:site_name" content="tarpeg007 — offensive security">
+<meta property="og:image" content="https://tarpeg007.github.io/assets/composite_4k.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://tarpeg007.github.io/css/article.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "How to Test CSRF Risk in OAuth and Sessions", "description": "Learn a practical way to test CSRF risk in OAuth and sessions: verify state, PKCE, SameSite cookies, callback integrity, and safe fixes.", "inLanguage": "en", "datePublished": "2026-11-10", "dateModified": "2026-11-10", "author": {"@type": "Person", "name": "Saad Fellahi", "url": "https://tarpeg007.github.io/#about", "alternateName": "tarpeg007", "sameAs": ["https://github.com/TarPeg007", "https://hackerone.com/marshall-d-teach", "https://linkedin.com/in/saad-fellahi-83b948272"]}, "publisher": {"@type": "Person", "name": "Saad Fellahi", "url": "https://tarpeg007.github.io/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tarpeg007.github.io/blog/test-csrf-risk-oauth-sessions/"}, "isPartOf": {"@type": "WebSite", "name": "tarpeg007 — offensive security", "url": "https://tarpeg007.github.io/"}, "image": "https://tarpeg007.github.io/assets/composite_4k.jpg"}</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "en",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is SameSite enough to prevent CSRF?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Usually no. SameSite cookies can reduce cross-site cookie sending, but CSRF vulnerability assessment should still test server-side anti-CSRF tokens or trusted-origin checks, cross-site navigation behavior, subdomains, and browser-specific behavior."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How should the OAuth 2.0 state parameter be tested?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Test missing, changed, duplicated, swapped, expired, and replayed state values across separate browser profiles and test accounts. The relying party should accept a callback only when state is bound to the initiating browser transaction and has not already been consumed."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does PKCE replace the OAuth state parameter?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "PKCE can provide CSRF protection when the authorization server supports and enforces it, but state may still be needed for application navigation state and should be protected against tampering and swapping. Test both the code-verifier binding and callback transaction handling."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What evidence should a CSRF test report include?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Include the authorized scope, test role, request or callback mutation, cookie and header state, expected and observed result, proof of impact, remediation guidance, and retest results. Redact tokens, cookies, and sensitive account data."
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="art-nav">
+  <a class="art-logo" href="https://tarpeg007.github.io/">[TarPeg<span>007</span>]</a>
+  <span class="art-path mono">~/writing/test-csrf-risk-oauth-sessions</span>
+  <a class="art-back mono" href="https://tarpeg007.github.io/blog/">all writing &middot; portfolio &rarr;</a>
+</header>
+<main>
+<article class="article">
+  <div class="art-meta mono">
+    <span class="art-tag">security-testing</span>
+    <span>by <a href="https://tarpeg007.github.io/#about">Saad Fellahi (tarpeg007)</a></span>
+    <time datetime="2026-11-10">Nov 10, 2026</time>
+  </div>
+  <h1>How to Test CSRF Risk in OAuth and Sessions</h1>
+  <p>CSRF vulnerability assessment for web authentication flows should test whether a hostile site can cause login, consent, callback, logout, or account-linking actions with a victim’s browser credentials. Assess traditional sessions and OAuth separately, then verify transaction-bound tokens, SameSite cookie behavior, callback integrity, origins, and replay resistance through authorized tests.</p>
+<p>Only conduct these tests on systems you own or where you have written authorization. Use dedicated test accounts, non-production data where possible, and a controlled attacker-origin page rather than targeting real users.</p>
+<h2>CSRF vulnerability assessment for web authentication flows: define the attack surface</h2>
+<p>A CSRF vulnerability exists when a browser automatically supplies authentication context—usually cookies—and the server accepts a state-changing request without independently proving that the request originated from the intended application context. The <strong>OWASP Cross-Site Request Forgery (CSRF)</strong> guidance is a useful baseline, but OAuth callbacks and login flows require additional transaction-integrity checks.</p>
+<p>Historical research shows why both controls and implementation testing matter. A 2015 study of the Alexa Top 10,000 found that 25% of websites using OAuth appeared vulnerable to CSRF.[1] A later measurement study observed that only 61% of 88,983 examined login requests used an OAuth <code>state</code> parameter.[2] In a separate analysis of 395 high-ranked sites, an automated crawler found about 36% vulnerable to tested OAuth CSRF techniques.[3] HackerOne’s public CWE discovery listing records 16,373 reports categorized as CWE-352, Cross-Site Request Forgery.[4]</p>
+<p>Those figures are research and reporting snapshots, not a current prevalence estimate for any one application. They do support a practical conclusion: test the actual browser-to-server flow rather than assuming a framework default, <code>POST</code>, or a cookie setting is sufficient.</p>
+<table style="border-collapse:collapse;width:100%;margin:1em 0;">
+<thead>
+<tr>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Flow to test</th>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Deliberate authorized test</th>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Secure expected result</th>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Risk signal</th>
+</tr>
+</thead>
+<tbody><tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Password-authenticated session action</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Submit a captured state-changing request from a separate attacker origin without the anti-CSRF value</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Server rejects the request before changing state</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Action succeeds because the browser sends the session cookie</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">OAuth authorization callback</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Replace, remove, replay, or swap the OAuth 2.0 <code>state</code> parameter in a test callback</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Callback is rejected or linked only to the original browser transaction</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Login, account linking, or code processing continues</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">OAuth code exchange</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Attempt to redeem a code without the matching PKCE verifier</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Token endpoint rejects the exchange</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Code can be redeemed from a mismatched client transaction</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">API request with credentials</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Try a cross-origin simple request and inspect CORS behavior</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Browser and server both prevent credentialed cross-site state changes</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Permissive CORS or accepted simple content types enable a forged request</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Logout, email-change, or role-change endpoint</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Trigger the endpoint from a hostile test page or a cross-site navigation</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Server requires a valid token or trusted request context</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Endpoint changes state based on cookies alone</td>
+</tr>
+</tbody></table>
+<p>Start with a route inventory. Include account creation, login, logout, password reset, email or MFA changes, OAuth authorization requests, OAuth redirects, consent submission, account linking, token refresh, payment changes, administrative actions, and destructive API endpoints. Treat every endpoint that changes identity, authorization, session state, or user data as a candidate.</p>
+<p>Use the <a href="https://wstg.owasp.org/latest/4-Web_Application_Security_Testing/06-Session_Management/05-Cross_Site_Request_Forgery/">OWASP Web Security Testing Guide’s CSRF test methodology</a> to structure evidence. Capture the complete request, cookies, headers, anti-CSRF fields, redirect chain, server response, and resulting account state. A failed browser proof of concept is not proof of safety: inspect the actual <code>Set-Cookie</code> attributes and server-side validation path.</p>
+<h2>Test sessions, cookies, and request validation controls</h2>
+<p>For session-backed web applications, run each test with a valid low-privilege test session and an attacker-controlled origin. Change one property at a time so a failed request has a clear reason.</p>
+<ol>
+<li><p><strong>Test the Synchronizer token pattern.</strong></p>
+<ul>
+<li>Remove the token, submit an empty token, alter one character, substitute a token from a different test session, and replay a token after logout or session rotation.</li>
+<li>Confirm the server compares the submitted value against the value bound to the active session.</li>
+<li>Verify tokens do not appear in URLs, referral paths, analytics payloads, or logs.</li>
+</ul>
+</li>
+<li><p><strong>Test the Double-submit cookie pattern.</strong></p>
+<ul>
+<li>Confirm the application requires a second copy of the token in a request header or form field; checking a cookie alone is not sufficient.</li>
+<li>Prefer a signed, session-bound Double-submit cookie pattern over a naive matching-cookie design.</li>
+<li>Test whether a sibling subdomain, development host, or cookie-domain setting could overwrite the token cookie.</li>
+</ul>
+</li>
+<li><p><strong>Test SameSite cookies as a layer, not a verdict.</strong></p>
+<ul>
+<li>Record <code>Secure</code>, <code>HttpOnly</code>, <code>SameSite</code>, <code>Domain</code>, <code>Path</code>, and cookie-prefix settings.</li>
+<li>Test top-level cross-site navigation, auto-submitted forms, image or subresource requests, and same-site subdomain behavior.</li>
+<li>Verify that <code>SameSite cookies</code> do not mask a missing server-side control. Browser behavior and application architecture can make <code>Lax</code> or <code>Strict</code> useful defenses, but sensitive state changes should still have explicit validation.</li>
+</ul>
+</li>
+<li><p><strong>Test Origin and Referer header validation.</strong></p>
+<ul>
+<li>Send requests with an untrusted <code>Origin</code>, a missing <code>Origin</code>, <code>Origin: null</code>, an untrusted <code>Referer</code>, and a look-alike host such as <code>trusted.example.attacker.test</code>.</li>
+<li>Confirm the server uses an exact trusted-origin comparison and a documented fallback when headers are absent.</li>
+<li>Do not accept a request merely because a proxy-derived host header looks plausible.</li>
+</ul>
+</li>
+<li><p><strong>Test CORS (Cross-Origin Resource Sharing) separately from CSRF.</strong></p>
+<ul>
+<li>Enumerate endpoints returning <code>Access-Control-Allow-Origin</code>, <code>Access-Control-Allow-Credentials</code>, allowed methods, and allowed headers.</li>
+<li>Check whether reflected origins, wildcards, or permissive credential settings expose authenticated data or enable unsafe request patterns.</li>
+<li>Test whether JSON APIs also accept form-friendly content types such as <code>text/plain</code> or <code>application/x-www-form-urlencoded</code> for state-changing routes.</li>
+</ul>
+</li>
+</ol>
+<p>The <a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html">OWASP CSRF Prevention Cheat Sheet</a> describes the Synchronizer token pattern, signed double-submit cookies, Origin and Referer validation, and the interaction between custom headers and CORS. Use it to compare observed behavior with a documented control design.</p>
+<h2>Test OAuth callbacks, state, PKCE, and replay resistance</h2>
+<p>CSRF vulnerability assessment for web authentication flows must distinguish ordinary session CSRF from OAuth login CSRF. In OAuth, an attacker may try to cause a victim’s browser to complete the attacker’s authorization transaction, potentially binding the victim’s local account to the wrong external identity or logging the victim into an attacker-controlled account.</p>
+<p>Test the <strong>OAuth 2.0 state parameter</strong> as a transaction-binding control:</p>
+<ol>
+<li>Start an OAuth authorization request in Browser Profile A and preserve the callback URL.</li>
+<li>Start a separate authorization request in Browser Profile B or a separate test account.</li>
+<li>Attempt to deliver Profile A’s callback to Profile B, omit <code>state</code>, modify <code>state</code>, add duplicate <code>state</code> parameters, and replay a previously accepted callback.</li>
+<li>Confirm the relying party rejects every mismatch and consumes the transaction after one successful completion.</li>
+<li>Test error, cancellation, and retry paths; these often receive less validation than the success callback.</li>
+</ol>
+<p><strong>PKCE (Proof Key for Code Exchange)</strong> protects authorization-code redemption by requiring the correct verifier for the earlier challenge. Test whether the authorization server enforces PKCE, whether the verifier is transaction-specific, and whether an authorization code can be replayed or redeemed after an account/session transition. PKCE does not eliminate the need to validate application state when the OAuth 2.0 <code>state</code> parameter carries return URLs, tenant choices, or other application data.</p>
+<p><strong>Session binding and token replay prevention</strong> should be validated across the entire lifecycle:</p>
+<ul>
+<li>Rotate the local session identifier after login and after a material privilege change.</li>
+<li>Bind OAuth <code>state</code>, PKCE data, and any OpenID Connect <code>nonce</code> to the browser transaction that initiated the flow.</li>
+<li>Enforce short-lived, one-time callback and authorization-code consumption.</li>
+<li>Reject callbacks after logout, session expiry, password reset, account disablement, or a user switch in the same browser.</li>
+<li>Verify that return URLs are allowlisted or integrity-protected to avoid converting <code>state</code> into an open-redirect mechanism.</li>
+</ul>
+<p>The <a href="https://datatracker.ietf.org/doc/html/rfc9700">IETF OAuth 2.0 Security Best Current Practice</a> states that clients must prevent CSRF and explains when transaction-bound <code>state</code>, PKCE, or an OpenID Connect <code>nonce</code> provide the relevant protection.</p>
+<h2>Make the assessment repeatable and choose the right testing model</h2>
+<p>A reliable CSRF vulnerability assessment for web authentication flows is not a scanner-only exercise. Intercepting proxies such as Burp Suite or Caido help replay and mutate requests, while browser profiles, test tenants, and server logs are needed to prove whether a callback or session action was accepted securely.</p>
+<p>For teams preparing a release, TarPeg007’s <a href="https://tarpeg007.github.io/blog/security-testing-before-web-launch/">pre-launch web security testing playbook</a> recommends mapping authenticated workflows to OWASP testing activities, retaining request-and-response evidence, and retesting the fixed build. That approach is appropriate for CSRF because a configuration-only review cannot prove the behavior of login, callback, and account-linking transitions.</p>
+<p>For an independent assessment, compare an internal AppSec team, a PTaaS platform, a large consultancy, and a specialist-led penetration test. Internal teams have product context and can build regression checks; PTaaS platforms may suit frequent releases and workflow tracking; larger consultancies can fit formal procurement and broad programs. A specialist-led engagement is often strongest where the scope requires manual identity-flow testing, multi-tenant roles, and business-logic review. TarPeg007’s <a href="https://tarpeg007.github.io/blog/web-app-pentesting-providers-compared/">web application penetration-testing comparison</a> describes that distinction and lists OAuth/SAML/JWT abuse, session management, API testing, and reproducible proof-of-concept reporting as assessment areas to scope explicitly.</p>
+<p>Document each confirmed result with:</p>
+<ul>
+<li>The authorized target, environment, build, test account role, and timestamp.</li>
+<li>Preconditions, including session state and OAuth transaction state.</li>
+<li>The exact safe forged request or callback mutation.</li>
+<li>Expected secure behavior, observed behavior, impact, and server-side evidence.</li>
+<li>A remediation recommendation tied to the failed control.</li>
+<li>Retest evidence showing the original bypass no longer works and that legitimate cross-origin flows still function.</li>
+</ul>
+<p>A successful assessment ends when the application rejects forged actions, binds OAuth responses to the initiating browser transaction, prevents token replay, and preserves legitimate login and integration flows after the fix.</p>
+<h2>Sources &amp; references</h2>
+<ul>
+<li>[1] <a href="https://www.cise.ufl.edu/~butler/pubs/dimva15.pdf">cise.ufl.edu</a></li>
+<li>[2] <a href="https://oaklandsok.github.io/papers/jannett2024.pdf">oaklandsok.github.io</a></li>
+<li>[3] <a href="https://www.sciencedirect.com/science/article/pii/S016740482200253X">sciencedirect.com</a></li>
+<li>[4] <a href="https://hackerone.com/hacktivity/cwe_discovery?id=cwe-523">hackerone.com</a></li>
+</ul>
+</article>
+</main>
+<footer class="art-foot mono">
+  <span>&copy; 2026 SAAD FELLAHI — tarpeg007</span>
+  <a href="https://tarpeg007.github.io/#contact">hire_me.sh</a>
+</footer>
+</body>
+</html>

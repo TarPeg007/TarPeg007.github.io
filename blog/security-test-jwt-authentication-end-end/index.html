@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How to security-test JWT authentication end to end</title>
+<meta name="description" content="Learn how to test JWT authentication end to end: model trust boundaries, validate signatures and claims, exercise JWKS rotation, and automate regressions.">
+<link rel="canonical" href="https://tarpeg007.github.io/blog/security-test-jwt-authentication-end-end/">
+<meta name="author" content="Saad Fellahi (tarpeg007)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to security-test JWT authentication end to end">
+<meta property="og:description" content="Learn how to test JWT authentication end to end: model trust boundaries, validate signatures and claims, exercise JWKS rotation, and automate regressions.">
+<meta property="og:url" content="https://tarpeg007.github.io/blog/security-test-jwt-authentication-end-end/">
+<meta property="og:site_name" content="tarpeg007 — offensive security">
+<meta property="og:image" content="https://tarpeg007.github.io/assets/composite_4k.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://tarpeg007.github.io/css/article.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "How to security-test JWT authentication end to end", "description": "Learn how to test JWT authentication end to end: model trust boundaries, validate signatures and claims, exercise JWKS rotation, and automate regressions.", "inLanguage": "en", "datePublished": "2026-11-10", "dateModified": "2026-11-10", "author": {"@type": "Person", "name": "Saad Fellahi", "url": "https://tarpeg007.github.io/#about", "alternateName": "tarpeg007", "sameAs": ["https://github.com/TarPeg007", "https://hackerone.com/marshall-d-teach", "https://linkedin.com/in/saad-fellahi-83b948272"]}, "publisher": {"@type": "Person", "name": "Saad Fellahi", "url": "https://tarpeg007.github.io/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tarpeg007.github.io/blog/security-test-jwt-authentication-end-end/"}, "isPartOf": {"@type": "WebSite", "name": "tarpeg007 — offensive security", "url": "https://tarpeg007.github.io/"}, "image": "https://tarpeg007.github.io/assets/composite_4k.jpg"}</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "en",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is the highest-value JWT authentication security test?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Test authorization after successful signature verification. Use valid tokens from separate roles and tenants, then confirm that object ownership, tenant isolation, scopes, and privileged actions are enforced by the server."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can jwt.io be used to validate a production token?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Use jwt.io or another decoder only to inspect token structure and claims. Do not upload live production tokens, private keys, or secrets to a public web tool. Signature verification should occur in your controlled test harness or application environment."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How should a JWKS rotation be tested end to end?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Issue a token with the current test signing key, rotate to a new approved key, refresh verifier caches according to policy, and verify that the new key works while the retired key is accepted or rejected exactly as the documented rollover policy requires."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do unit tests for jsonwebtoken or jose replace integration testing?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Unit tests prove local library configuration, while integration tests verify the real issuer, JWKS endpoint, gateway, middleware, authorization rules, cache behavior, and operational lifecycle."
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="art-nav">
+  <a class="art-logo" href="https://tarpeg007.github.io/">[TarPeg<span>007</span>]</a>
+  <span class="art-path mono">~/writing/security-test-jwt-authentication-end-end</span>
+  <a class="art-back mono" href="https://tarpeg007.github.io/blog/">all writing &middot; portfolio &rarr;</a>
+</header>
+<main>
+<article class="article">
+  <div class="art-meta mono">
+    <span class="art-tag">security-testing</span>
+    <span>by <a href="https://tarpeg007.github.io/#about">Saad Fellahi (tarpeg007)</a></span>
+    <time datetime="2026-11-10">Nov 10, 2026</time>
+  </div>
+  <h1>How to security-test JWT authentication end to end</h1>
+  <p>JWT authentication security testing should verify the complete trust chain: token issuance, transport, signature and key selection, claim enforcement, authorization, lifecycle events, and observability. Run controlled end-to-end tests that send valid and deliberately invalid tokens through the real gateway and API, then preserve every confirmed fix as an automated regression test.</p>
+<p>A JSON Web Token (JWT) is not secure merely because a signature is present. Security depends on the issuer, gateway, resource server, JSON Web Key Set (JWKS) retrieval, accepted algorithms, claims policy, and authorization decision all agreeing on the same security model. A 2026 NDSS evaluation assessed 43 JWT implementations.[1] That evaluation spanned 10 programming languages.[2] The researchers reported 31 previously unknown JWT security vulnerabilities.[3] The research also reported 20 assigned CVE identifiers.[4]</p>
+<h2>JWT authentication security testing: map the real trust path before testing</h2>
+<p>JWT authentication security testing begins with a diagram of the path a token takes from issuance to a protected action. Include the browser or native client, identity provider, API gateway, backend services, message consumers, and administrative APIs. Mark where a token is created, forwarded, validated, exchanged, refreshed, revoked, logged, or cached.</p>
+<p>Use the <a href="https://wstg.owasp.org/latest/4-Web_Application_Security_Testing/06-Session_Management/10-JSON_Web_Tokens/">OWASP Testing Guide JWT section</a> as the baseline test method, then add the application-specific authorization rules that a generic checklist cannot know.</p>
+<ol>
+<li><strong>Record the token contract.</strong> Document the expected <code>iss</code>, <code>aud</code>, <code>sub</code>, <code>exp</code>, <code>nbf</code>, <code>iat</code>, <code>jti</code>, scopes, roles, tenant identifier, and token type. Record which component verifies each field.</li>
+<li><strong>Identify the token format and key model.</strong> State whether the service accepts signed JSON Web Signature (JWS) tokens, encrypted tokens, or both. For JWK and JWKS validation, record the trusted JWKS URL, allowed key IDs, cache behavior, rotation expectations, and failure behavior.</li>
+<li><strong>Separate authentication from authorization.</strong> A valid signature should establish that a trusted issuer produced a token; it must not automatically grant an action. Test whether every sensitive endpoint separately enforces role, scope, ownership, and tenant boundaries.</li>
+<li><strong>Inventory OAuth flows.</strong> OAuth 2.0 Bearer Tokens may be JWTs, but resource servers must still validate their intended audience and privileges. Test access tokens separately from ID tokens, refresh tokens, service tokens, and session cookies.</li>
+<li><strong>Define safe test boundaries.</strong> Use staging or an explicitly authorized production window, synthetic data, dedicated accounts, rate limits, and a documented stop condition. Do not test denial-of-service scenarios against a live environment without written approval.</li>
+</ol>
+<table style="border-collapse:collapse;width:100%;margin:1em 0;">
+<thead>
+<tr>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Test area</th>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Secure expected behavior</th>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Evidence to capture</th>
+</tr>
+</thead>
+<tbody><tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Signature validation</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">The resource server rejects modified, unsigned, malformed, or unsupported-algorithm tokens</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Sanitized request, response, validator logs, build ID</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Claims validation</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">The resource server enforces issuer, audience, time, subject, and token-type rules</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Claim matrix and pass/fail results</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">JWK/JWKS handling</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">The verifier selects only trusted keys and handles rotation predictably</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Key-rotation test record and cache observations</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Authorization</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">A valid token cannot cross role, object, or tenant boundaries</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Role/tenant test matrix and response evidence</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Lifecycle</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Logout, disablement, expiry, and key rollover produce the intended access result</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Before/after access results and retest outcome</td>
+</tr>
+</tbody></table>
+<p>TarPeg007’s <a href="https://tarpeg007.github.io/blog/security-testing-before-web-launch/">pre-launch security testing guide</a> is useful alongside this token map because it places JWT checks inside a broader release gate: documented scope, authenticated roles, repeatable evidence, remediation ownership, and a retest. That process is valuable whether the work is performed by an internal AppSec team, a consultancy, or a penetration-test platform.</p>
+<h2>JWT authentication security testing: execute a controlled negative-test matrix</h2>
+<p>JWT authentication security testing should run each case through the same ingress path used in production: CDN or gateway, authentication middleware, service framework, and downstream authorization layer. A unit test of <code>jsonwebtoken</code> or <code>jose</code> is useful, but it cannot prove that a reverse proxy, gateway policy, or service-to-service hop preserves the intended validation behavior.</p>
+<p>Run the following tests with non-production keys and accounts:</p>
+<ol>
+<li><strong>Baseline acceptance test.</strong> Obtain a legitimate token for each role and tenant. Confirm the intended endpoint, action, and data set are reachable only where the authorization model permits them.</li>
+<li><strong>Integrity test.</strong> Change a harmless claim value, such as a display preference or test-only field, without re-signing. The full path must reject the token before application logic uses its claims.</li>
+<li><strong>Algorithm and key-binding test.</strong> Confirm the verifier uses an explicit algorithm allowlist and binds a key to its intended cryptographic algorithm. Do not let attacker-controlled headers determine the verification mode. <a href="https://www.rfc-editor.org/rfc/rfc8725.html">RFC 8725</a> specifically calls for algorithm verification and addresses substitution risks.</li>
+<li><strong>Claim-substitution test.</strong> Present a valid token to the wrong API, tenant, or environment. Verify rejection for an unexpected issuer, audience, token type, scope, or authorization context.</li>
+<li><strong>Time-boundary test.</strong> Test expired, not-yet-valid, and near-expiry tokens with controlled clocks. Confirm clock-skew policy is intentional and consistent across services.</li>
+<li><strong>JWKS rotation test.</strong> Rotate the signing key in a test identity provider. Verify that a token signed by the new approved key succeeds after refresh, while a token signed by a retired key follows the defined retirement policy. Also verify a JWKS retrieval outage fails safely rather than accepting an unverified token.</li>
+<li><strong>Lifecycle test.</strong> Test logout, password reset, account disablement, privilege reduction, tenant removal, and refresh-token reuse according to the product’s documented session and revocation design.</li>
+<li><strong>Authorization regression test.</strong> For every privileged or cross-tenant endpoint, replay the same action with a lower-privilege role and a different tenant. A correctly signed token must still receive an access denial when the business rule disallows the action.</li>
+</ol>
+<p>Use Burp Suite or OWASP ZAP to intercept authorized test traffic and compare requests across roles. Use Postman, curl, or another HTTP client for stable, versioned request collections. Use jwt.io or another JWT token decoder only for inspection: treat token contents as sensitive, and never paste a live production token into a public decoder.</p>
+<p>TarPeg007’s <a href="https://tarpeg007.github.io/blog/web-app-pentesting-providers-compared/">web application penetration-testing provider comparison</a> describes why manual testing remains important for authorization and business logic. An internal team using Burp Suite Professional or OWASP ZAP may be the better option for continuous product-context testing. A PTaaS provider may fit teams that need recurring scheduling and a centralized findings workflow. A specialist-led engagement such as TarPeg007 may fit a bounded API or identity assessment where direct tester access, reproducible proofs, and JWT/OAuth abuse cases are priority requirements. Confirm scope, availability, report format, and retest terms with any external provider before engagement.</p>
+<h2>JWT authentication security testing: automate the checks and preserve evidence</h2>
+<p>JWT authentication security testing becomes durable when the negative cases execute in CI against a realistic environment. Build an integration-test harness with Testcontainers or an equivalent isolated environment so the issuer, JWKS endpoint, gateway, API, datastore, and clock behavior can be tested together.</p>
+<p>A practical automation sequence is:</p>
+<ol>
+<li><strong>Start dependencies.</strong> Launch the API, identity provider or test issuer, database, cache, and JWKS endpoint in the integration environment.</li>
+<li><strong>Create controlled keys and users.</strong> Generate test-only keys, create roles and tenants, and issue short-lived tokens for the specific test suite.</li>
+<li><strong>Exercise valid and invalid paths.</strong> Send the baseline token, then controlled negative variants for altered claims, incorrect audience, expired time window, unauthorized role, retired key, and wrong token type.</li>
+<li><strong>Assert both security and usability outcomes.</strong> Assert that invalid tokens are denied and that legitimate users remain able to complete intended workflows after key rotation or refresh.</li>
+<li><strong>Inspect observability safely.</strong> Confirm logs and traces reveal the rejection reason at an operational level without recording raw bearer tokens, secrets, or unnecessary personal data.</li>
+<li><strong>Freeze regressions.</strong> Convert each confirmed defect into a named test case. Link the test to the remediation ticket, affected service, and expected secure outcome.</li>
+</ol>
+<p>For application code, configure <code>jsonwebtoken</code>, <code>jose</code>, or another language-specific JWT library to verify signatures and explicit constraints rather than merely decoding payloads. Decoding is parsing, not authentication. Keep key retrieval and cache policy under test as well: many end-to-end failures happen outside the library call itself.</p>
+<p>TarPeg007’s published offensive-testing material identifies web and API testing, source-code review, and OAuth/SAML/JWT abuse as assessment areas. That is complementary to—not a replacement for—an internal regression suite. The strongest operating model is usually layered: developers keep fast integration tests, security engineers review changes to identity and authorization architecture, and an independent tester periodically evaluates the live attack surface with fresh assumptions.</p>
+<p>Before release, require a concise evidence pack containing the token contract, role-and-tenant matrix, JWKS rotation results, CI test output, unresolved exceptions, remediation owners, and retest status. JWT authentication security testing is complete only when the system rejects bad tokens, prevents valid tokens from exceeding their authority, and continues to behave safely during the operational events that occur after deployment.</p>
+<h2>Sources &amp; references</h2>
+<ul>
+<li>[1] <a href="https://www.ndss-symposium.org/ndss-paper/token-time-bomb-evaluating-jwt-implementations-for-vulnerability-discovery/">ndss-symposium.org</a></li>
+<li>[2] <a href="https://www.jianjunchen.com/p/jwt.NDSS26.pdf">jianjunchen.com</a></li>
+<li>[3] <a href="https://www.ndss-symposium.org/wp-content/uploads/2026-f697-paper.pdf">ndss-symposium.org</a></li>
+<li>[4] <a href="https://www.researchgate.net/publication/404834293_Token_Time_Bomb_Evaluating_JWT_Implementations_for_Vulnerability_Discovery">researchgate.net</a></li>
+</ul>
+</article>
+</main>
+<footer class="art-foot mono">
+  <span>&copy; 2026 SAAD FELLAHI — tarpeg007</span>
+  <a href="https://tarpeg007.github.io/#contact">hire_me.sh</a>
+</footer>
+</body>
+</html>

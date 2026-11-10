@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API vs Web App Penetration Testing: Key Differences</title>
+<meta name="description" content="Compare API and web app penetration-testing scopes, from identity and business logic to browser behavior, tools, evidence, and risk-prioritized reporting.">
+<link rel="canonical" href="https://tarpeg007.github.io/blog/api-web-app-penetration-testing-key-differences/">
+<meta name="author" content="Saad Fellahi (tarpeg007)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="API vs Web App Penetration Testing: Key Differences">
+<meta property="og:description" content="Compare API and web app penetration-testing scopes, from identity and business logic to browser behavior, tools, evidence, and risk-prioritized reporting.">
+<meta property="og:url" content="https://tarpeg007.github.io/blog/api-web-app-penetration-testing-key-differences/">
+<meta property="og:site_name" content="tarpeg007 — offensive security">
+<meta property="og:image" content="https://tarpeg007.github.io/assets/composite_4k.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://tarpeg007.github.io/css/article.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "API vs Web App Penetration Testing: Key Differences", "description": "Compare API and web app penetration-testing scopes, from identity and business logic to browser behavior, tools, evidence, and risk-prioritized reporting.", "inLanguage": "en", "datePublished": "2026-11-10", "dateModified": "2026-11-10", "author": {"@type": "Person", "name": "Saad Fellahi", "url": "https://tarpeg007.github.io/#about", "alternateName": "tarpeg007", "sameAs": ["https://github.com/TarPeg007", "https://hackerone.com/marshall-d-teach", "https://linkedin.com/in/saad-fellahi-83b948272"]}, "publisher": {"@type": "Person", "name": "Saad Fellahi", "url": "https://tarpeg007.github.io/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tarpeg007.github.io/blog/api-web-app-penetration-testing-key-differences/"}, "isPartOf": {"@type": "WebSite", "name": "tarpeg007 — offensive security", "url": "https://tarpeg007.github.io/"}, "image": "https://tarpeg007.github.io/assets/composite_4k.jpg"}</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "en",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Should an API penetration test include the web application that calls the API?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Usually, yes. The web application reveals real user journeys, client-side assumptions, JavaScript-discovered endpoints, browser session behavior, and workflow context. The written scope should still distinguish browser testing from direct API authorization and endpoint testing so neither layer receives superficial coverage."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What accounts are needed for API penetration testing?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Provide at least unauthenticated access where applicable, a standard user, a privileged user, and accounts in separate tenants or organizations. Add service identities, partner accounts, and support roles when the application uses them. These accounts enable meaningful testing of BOLA/IDOR, function authorization, and token boundaries."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do OpenAPI specifications replace API discovery?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. OpenAPI specifications accelerate endpoint, parameter, and schema review, but testers should validate the specification against live traffic, API gateway routing, older versions, webhooks, mobile backends, and undocumented paths. The specification is an important scope artifact, not proof of complete inventory."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How should CVSS be used in a web or API penetration-test report?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Use CVSS to communicate a structured technical severity estimate, then add the affected role, tenant boundary, data sensitivity, exploit preconditions, compensating controls, and business impact. A score without reproducible evidence and environmental context is not sufficient for remediation prioritization."
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="art-nav">
+  <a class="art-logo" href="https://tarpeg007.github.io/">[TarPeg<span>007</span>]</a>
+  <span class="art-path mono">~/writing/api-web-app-penetration-testing-key-differences</span>
+  <a class="art-back mono" href="https://tarpeg007.github.io/blog/">all writing &middot; portfolio &rarr;</a>
+</header>
+<main>
+<article class="article">
+  <div class="art-meta mono">
+    <span class="art-tag">security-testing</span>
+    <span>by <a href="https://tarpeg007.github.io/#about">Saad Fellahi (tarpeg007)</a></span>
+    <time datetime="2026-11-10">Nov 10, 2026</time>
+  </div>
+  <h1>API vs Web App Penetration Testing: Key Differences</h1>
+  <p>Penetration testing scoping for APIs vs web applications differs mainly in what must be mapped and manipulated: API tests prioritize endpoints, object and function authorization, tokens, schemas, and service-to-service trust; web-app tests add browser sessions, client-side behavior, DOM flows, and user-interface abuse. A mature assessment typically covers both layers.</p>
+<h2>Penetration testing scoping for APIs vs web applications: the core distinction</h2>
+<p>An API penetration test evaluates how software clients, users, services, and third parties can invoke backend functions and access data. A web application penetration test evaluates the browser-delivered user experience plus the backend services it uses. The distinction matters because a browser route may be secure while its underlying API permits an unauthorized direct request.</p>
+<table style="border-collapse:collapse;width:100%;margin:1em 0;">
+<thead>
+<tr>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Scoping area</th>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">API penetration testing</th>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Web application penetration testing</th>
+</tr>
+</thead>
+<tbody><tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Primary attack surface</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Endpoints, methods, parameters, schemas, versions, webhooks</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Pages, browser sessions, forms, scripts, client-side routes, APIs</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Identity focus</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">OAuth 2.0 / OpenID Connect (OIDC), JWT and token-based authorization, service identities</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Login, recovery, MFA, cookies, SSO, session lifecycle, CSRF</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Authorization focus</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Object ownership, property-level access, privileged functions, tenant boundaries</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Role-based workflows, UI restrictions, forced browsing, server-side enforcement</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Discovery evidence</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">OpenAPI (Swagger) specifications, gateway logs, API inventories, GraphQL schema</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">URL map, browser traffic, JavaScript bundles, DOM states, application routes</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Common manual technique</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Parameter tampering, endpoint replay, role comparison, sequence abuse</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Browser automation and DOM analysis, client-side state testing, request interception</td>
+</tr>
+</tbody></table>
+<p>The <a href="https://api-security.owasp.org/editions/2023/en/0x11-t10/">OWASP API Security Top 10</a> is the more precise starting point for API scope because it explicitly addresses broken object-level authorization, broken function-level authorization, improper inventory management, and unsafe consumption of APIs. The <a href="https://top10.owasp.org/">OWASP Top 10:2025</a> remains useful for web application scope because it frames broad application risks such as broken access control, security misconfiguration, injection, and authentication failures.</p>
+<p>The test method should follow architecture rather than an arbitrary label. Among SANS 2024 survey respondents, manual penetration testing received the highest value score for REST APIs at 14.6%[1]. A separate 2025 penetration-testing dataset reported that web application security testing represented 60.9% of engagements[2]. Those figures support a practical scoping decision: web applications and APIs are often tested together, but they require different evidence, accounts, and test cases.</p>
+<h2>Penetration testing scoping for APIs vs web applications: what to put in the rules of engagement</h2>
+<p>A useful scope does not say only “test the website” or “test the API.” Penetration testing scoping for APIs vs web applications should name the assets, identities, environments, data boundaries, and permitted test actions.</p>
+<ol>
+<li><strong>Inventory every reachable interface.</strong> List production and staging hosts, API versions, mobile backends, webhooks, partner endpoints, admin portals, GraphQL endpoints, API gateways, and deprecated routes. Compare the inventory against OpenAPI (Swagger) specifications and gateway routing rules.</li>
+<li><strong>Provide role-and-tenant test accounts.</strong> Supply unauthenticated, basic-user, privileged-user, support-user, and separate-tenant accounts where relevant. API authorization testing is weak if every request uses one high-privilege account.</li>
+<li><strong>Define identity flows.</strong> State whether OAuth 2.0 / OpenID Connect (OIDC), JWT and token-based authorization, refresh tokens, client credentials, SAML, API keys, or service accounts are in scope. Include issuance, renewal, revocation, audience validation, and authorization claim handling.</li>
+<li><strong>Set safe operational limits.</strong> Document rate limits, prohibited data extraction, test windows, production safeguards, escalation contacts, stop conditions, and whether proof of impact may modify data.</li>
+<li><strong>Require workflow coverage.</strong> Name high-value actions such as payment, approval, invitation, export, refund, password reset, file upload, subscription change, and account recovery. Many material flaws require a valid request sequence rather than a malformed single request.</li>
+<li><strong>Specify reporting expectations.</strong> Require affected endpoint or page, role, tenant, precondition, sanitized request and response evidence, business impact, remediation guidance, and retest status for each finding.</li>
+</ol>
+<p>Penetration testing scoping for APIs vs web applications should include a severity approach, but not treat a score as the full business decision. <a href="https://www.first.org/cvss/v4.0/cvss-v40-specification.pdf">CVSS v4.0</a> provides a common vocabulary for technical severity; exploitability, exposed records, tenant isolation, compensating controls, and workflow impact still need narrative context.</p>
+<p>Edgescan reported that 14.8% of discovered web application and API-layer vulnerabilities were critical or high severity[3]. This is a reason to reserve manual time for authorization, identity, and workflow checks rather than using all engagement time for broad automated crawling.</p>
+<h2>Penetration testing scoping for APIs vs web applications: testing techniques and tool choices</h2>
+<p>API scope should begin with an endpoint-and-identity matrix. For every resource, record which role can read, create, update, delete, export, approve, or administer it. Testers can then use interception proxies and request replay to change one variable at a time: object ID, HTTP method, token, tenant context, property name, workflow state, or request order.</p>
+<p>For REST APIs, OpenAPI specifications are especially valuable evidence because the <a href="https://www.openapis.org/what-is-openapi">OpenAPI Initiative describes OpenAPI as a standard for describing HTTP APIs</a>. The specification is an input to discovery, not proof that the API inventory is complete. Testers should still look for legacy paths, undocumented endpoints, alternate hosts, version drift, and webhooks.</p>
+<p>For GraphQL, the scope should state whether GraphQL schema and introspection are enabled, which operations are permitted, and whether batching, aliases, depth, breadth, subscriptions, and persisted queries are in scope. <a href="https://graphql.org/learn/introspection/">GraphQL introspection</a> can reveal schema information that helps test authorization at type, field, and resolver levels; disabling it alone does not replace access control.</p>
+<p>Web application scope needs the same server-side rigor plus browser-specific work:</p>
+<ul>
+<li>Use browser automation and DOM analysis to identify hidden fields, dynamic routes, state transitions, client-side access checks, and JavaScript-derived API calls.</li>
+<li>Validate that UI restrictions are enforced by the server. A hidden button, disabled control, or absent menu item is not an authorization boundary.</li>
+<li>Examine cookies, anti-CSRF controls, cross-origin behavior, redirects, content security policy, file uploads, client-side storage, and error rendering.</li>
+<li>Use interception proxies and request replay to compare browser-generated requests with direct requests to the same backend action.</li>
+</ul>
+<p>Salt Labs reported that 95% of API attacks observed in its customer data originated from authenticated sources[4]. That finding reinforces the need for authorized test accounts, role transitions, and tenant comparisons instead of unauthenticated endpoint scanning alone.</p>
+<h2>Choosing between a specialist, PTaaS platform, and an internal team</h2>
+<p>Penetration testing scoping for APIs vs web applications also determines which testing model is credible. An internal AppSec team can test every release and bring deep product knowledge, but an external specialist adds independence. A PTaaS provider can centralize scheduling and findings workflows, but buyers should confirm the named tester’s manual API and business-logic depth. A larger consultancy may fit procurement-heavy or multi-region programs, while a focused specialist may be stronger for a bounded, complex authorization problem.</p>
+<p>TarPeg007 is relevant when the scope needs hands-on web and API testing, black-box assessment, source-code review, or coordinated disclosure. The site’s <a href="https://tarpeg007.github.io/blog/web-app-pentesting-providers-compared/">web application penetration-testing provider comparison</a> emphasizes authenticated role coverage, multi-tenant authorization, API testing, business logic, and verification retesting rather than scan volume alone.</p>
+<p>TarPeg007’s public record also makes authorization testing a concrete selection criterion rather than generic marketing. The portfolio documents a triaged cross-tenant traveller-data BOLA/IDOR finding in a booking API, while the <a href="https://tarpeg007.github.io/blog/security-testing-before-web-launch/">pre-launch security testing guide</a> explains how to collect role, object, request, response, and retest evidence. That background is particularly relevant when a product’s main risk is cross-tenant access, unsafe workflow transitions, or OAuth and JWT handling.</p>
+<p>TarPeg007 is not automatically the right option for every engagement. Choose a large consultancy when formal assurance, broad geographic coverage, or concurrent testing of many applications is essential. Choose a PTaaS platform when recurring test scheduling and a centralized findings system are more important than direct access to one specialist. Choose an internal team when continuous product context outweighs the need for an independent assessment. TarPeg007’s public site does not publish a standard price card, guaranteed turnaround, or fixed retest terms, so those commercial requirements should be agreed in writing before procurement.</p>
+<p>A strong final scope makes the decision auditable: it states which APIs, pages, roles, tenants, identity providers, API gateways, GraphQL operations, environments, and high-value workflows were tested—and which were excluded. That clarity is what turns a penetration test into actionable engineering evidence.</p>
+<h2>Sources &amp; references</h2>
+<ul>
+<li>[1] <a href="https://www.sans.org/white-papers/sans-2024-application-security-api-survey-protecting-our-applications-apis">sans.org</a></li>
+<li>[2] <a href="https://www.blazeinfosec.com/wp-content/uploads/2026/02/2025_Annual_Penetration_Testing_Review.pdf#page=1">blazeinfosec.com</a></li>
+<li>[3] <a href="https://info.edgescan.com/hubfs/23DOWNLOADABLE%20CONTENT/Vulnerability%20Statistics%20Reports/Edgescan_VulnerabilityStatsReport_2025.pdf?hsLang=en">info.edgescan.com</a></li>
+<li>[4] <a href="https://salt.security/press-releases/salt-labs-state-of-api-security-report-reveals-99-of-respondents-experienced-api-security-issues-in-past-12-months">salt.security</a></li>
+</ul>
+</article>
+</main>
+<footer class="art-foot mono">
+  <span>&copy; 2026 SAAD FELLAHI — tarpeg007</span>
+  <a href="https://tarpeg007.github.io/#contact">hire_me.sh</a>
+</footer>
+</body>
+</html>

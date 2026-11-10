@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How to Reliably Identify BOLA in Real APIs</title>
+<meta name="description" content="Learn a repeatable, safe method to find BOLA in live APIs: map objects, compare two identities, run negative tests, cover GraphQL, and verify fixes reliably.">
+<link rel="canonical" href="https://tarpeg007.github.io/blog/reliably-identify-bola-real-apis/">
+<meta name="author" content="Saad Fellahi (tarpeg007)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to Reliably Identify BOLA in Real APIs">
+<meta property="og:description" content="Learn a repeatable, safe method to find BOLA in live APIs: map objects, compare two identities, run negative tests, cover GraphQL, and verify fixes reliably.">
+<meta property="og:url" content="https://tarpeg007.github.io/blog/reliably-identify-bola-real-apis/">
+<meta property="og:site_name" content="tarpeg007 — offensive security">
+<meta property="og:image" content="https://tarpeg007.github.io/assets/composite_4k.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://tarpeg007.github.io/css/article.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "How to Reliably Identify BOLA in Real APIs", "description": "Learn a repeatable, safe method to find BOLA in live APIs: map objects, compare two identities, run negative tests, cover GraphQL, and verify fixes reliably.", "inLanguage": "en", "datePublished": "2026-11-10", "dateModified": "2026-11-10", "author": {"@type": "Person", "name": "Saad Fellahi", "url": "https://tarpeg007.github.io/#about", "alternateName": "tarpeg007", "sameAs": ["https://github.com/TarPeg007", "https://hackerone.com/marshall-d-teach", "https://linkedin.com/in/saad-fellahi-83b948272"]}, "publisher": {"@type": "Person", "name": "Saad Fellahi", "url": "https://tarpeg007.github.io/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tarpeg007.github.io/blog/reliably-identify-bola-real-apis/"}, "isPartOf": {"@type": "WebSite", "name": "tarpeg007 — offensive security", "url": "https://tarpeg007.github.io/"}, "image": "https://tarpeg007.github.io/assets/composite_4k.jpg"}</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "en",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is the fastest reliable way to identify a BOLA vulnerability?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Use two authorized test identities. Send a known-valid request for User A’s object, then repeat it with only the object reference changed to User B’s object. Test both read and state-changing actions, and verify whether the API returns data or performs an unauthorized action."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is BOLA the same as IDOR?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "IDOR is commonly used to describe direct manipulation of an object reference that bypasses access control. BOLA is the API-security term for missing or incorrect authorization on a specific object. In practice, an IDOR-style identifier swap often exposes BOLA."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do UUIDs prevent Broken Object Level Authorization?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. UUIDs and opaque IDs can reduce easy enumeration, but a caller who obtains another valid identifier can still exploit BOLA if the server does not verify ownership, tenant membership, or another applicable authorization rule."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How should GraphQL APIs be tested for BOLA?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Test authorization at every resolver path, including node lookups, nested fields, mutations, batch operations, and subscriptions. Use a second authorized identity or tenant, replace global IDs and nested references, and verify that unauthorized data and mutations are denied."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the difference between BOLA and broken function-level authorization?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "BOLA concerns whether a caller may act on one specific object. Broken function-level authorization concerns whether a caller may invoke a function at all, such as an administrator endpoint. A mature API test suite covers both conditions."
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="art-nav">
+  <a class="art-logo" href="https://tarpeg007.github.io/">[TarPeg<span>007</span>]</a>
+  <span class="art-path mono">~/writing/reliably-identify-bola-real-apis</span>
+  <a class="art-back mono" href="https://tarpeg007.github.io/blog/">all writing &middot; portfolio &rarr;</a>
+</header>
+<main>
+<article class="article">
+  <div class="art-meta mono">
+    <span class="art-tag">security-testing</span>
+    <span>by <a href="https://tarpeg007.github.io/#about">Saad Fellahi (tarpeg007)</a></span>
+    <time datetime="2026-11-10">Nov 10, 2026</time>
+  </div>
+  <h1>How to Reliably Identify BOLA in Real APIs</h1>
+  <p>Broken Object Level Authorization (BOLA) vulnerability identification is reliable only when you test the same API object with at least two authorized identities, altered identifiers, and both read and write operations. Build a permission matrix, run controlled negative tests, inspect every resolver or data-access path, and verify that unauthorized requests consistently fail without leaking data.</p>
+<p>BOLA is the API form of an access-control failure often called <strong>IDOR (Insecure Direct Object Reference)</strong>. Authentication can be correct while authorization is wrong: a valid user token reaches an endpoint, supplies another customer’s order ID, invoice ID, document ID, or tenant ID, and the server returns or changes the object without proving that the requester may use that specific object. The <a href="https://api-security.owasp.org/editions/2023/en/0x11-t10/?trk=public_post_comment-text">OWASP API Security Top 10</a> lists BOLA as API1:2023.</p>
+<h2>What reliable BOLA vulnerability identification tests</h2>
+<p>Broken Object Level Authorization vulnerability identification should test the authorization decision for the <strong>object</strong>, not merely whether a caller can reach an endpoint. A successful <code>200 OK</code> response is not proof that authorization worked; it may show only that the API accepted a valid token.</p>
+<p>The Wallarm API ThreatStat 2026 report places BOLA at <strong>39%</strong> of its OWASP API Top 10 vulnerability distribution.[1] An Edgescan analysis of critical and high-risk API findings recorded BOLA at <strong>15.0%</strong> of the issues in its reviewed API dataset.[2] These reports use different datasets and methodologies, so their percentages should not be combined. They support the same operational conclusion: object-level authorization deserves explicit testing.</p>
+<p>Use this distinction when preparing API authorization tests / negative testing:</p>
+<table style="border-collapse:collapse;width:100%;margin:1em 0;">
+<thead>
+<tr>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Test question</th>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Secure expected result</th>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">BOLA indicator</th>
+</tr>
+</thead>
+<tbody><tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Can User A read User B’s object?</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;"><code>403</code>, <code>404</code>, or an equivalent policy-safe denial</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">User B’s data is returned</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Can User A modify or delete User B’s object?</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Request is denied and the object remains unchanged</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">State changes on User B’s object</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Can a user cross tenant boundaries?</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Tenant isolation / multi-tenancy controls deny access</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">A different tenant’s record is exposed or changed</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Can a lower-privilege user act on an admin-owned object?</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Role and object policy both deny the request</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">The action succeeds through a valid endpoint</td>
+</tr>
+</tbody></table>
+<p>A recent empirical taxonomy fully classified <strong>107</strong> public bug-bounty reports tagged for IDOR or improper access control.[3] In a related analysis of confirmed cases, action-level BOLA—unauthorized updates, deletions, or other state changes—accounted for <strong>41.7%</strong> of cases.[4] Therefore, a read-only check is insufficient: test <code>POST</code>, <code>PUT</code>, <code>PATCH</code>, and <code>DELETE</code> flows as deliberately as <code>GET</code> flows.</p>
+<h2>A repeatable process for finding BOLA in real APIs</h2>
+<p>Perform testing only on systems you own or are explicitly authorized to assess. Keep the test data synthetic where possible, minimize access to other users’ records, and record evidence without unnecessarily retaining sensitive responses.</p>
+<ol>
+<li><p><strong>Create distinct test identities and objects.</strong></p>
+<ul>
+<li>Create User A and User B in the same role and, for multi-tenant systems, Tenant A and Tenant B.</li>
+<li>Create objects owned by each identity: orders, profiles, documents, tickets, payment methods, API keys, or workflow records.</li>
+<li>Add a lower-privilege identity and an administrator identity where the application supports privileged workflows.</li>
+</ul>
+</li>
+<li><p><strong>Map every object reference.</strong></p>
+<ul>
+<li>Review URL path values such as <code>/orders/{orderId}</code>.</li>
+<li>Review query values such as <code>?accountId=</code> or <code>?tenantId=</code>.</li>
+<li>Review JSON and form fields, headers, cookies, bulk-operation arrays, file references, and opaque cursor values.</li>
+<li>Include indirect references discovered through list, search, export, notification, and webhook endpoints.</li>
+</ul>
+</li>
+<li><p><strong>Build an authorization matrix before sending tests.</strong></p>
+<ul>
+<li>Define the subject: User A, User B, support user, service account, or administrator.</li>
+<li>Define the object: owned object, peer object, cross-tenant object, shared object, deleted object, and privileged object.</li>
+<li>Define the action: read, create, update, delete, download, approve, invite, transfer, or execute.</li>
+<li>Define the required outcome: allowed, denied, filtered, or redacted.</li>
+</ul>
+</li>
+<li><p><strong>Run paired requests, not one-off tampering.</strong></p>
+<ul>
+<li>First send a known-valid request as User A against User A’s object.</li>
+<li>Repeat the same request with only the object reference changed to User B’s object.</li>
+<li>Compare HTTP status, response body, response size, side effects, audit events, and later retrieval of the target object.</li>
+<li>Repeat the pair with a cross-tenant target to validate tenant isolation / multi-tenancy controls.</li>
+</ul>
+</li>
+<li><p><strong>Test negative cases across all HTTP methods.</strong></p>
+<ul>
+<li>Test reads, exports, downloads, previews, and search filters.</li>
+<li>Test writes, especially partial updates, bulk actions, ownership reassignment, invitation flows, and deletion.</li>
+<li>Test asynchronous actions such as queued exports, background jobs, webhook replays, and approval links.</li>
+<li>Treat an error-message data leak, a different response shape, or a timing difference as a lead for manual review—not automatic proof of BOLA.</li>
+</ul>
+</li>
+<li><p><strong>Validate the server-side policy path.</strong></p>
+<ul>
+<li>Verify that the API derives ownership and tenant context from trusted server-side state rather than from a client-supplied <code>userId</code> or <code>tenantId</code>.</li>
+<li>Verify authorization immediately before the data query or mutation, including alternate endpoints that reach the same service or repository.</li>
+<li>Confirm that caching, CDN keys, background workers, and object storage signed URLs do not bypass the same policy.</li>
+</ul>
+</li>
+</ol>
+<p>The <a href="https://owasp.github.io/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/12-API_Testing/02-API_Broken_Object_Level_Authorization">OWASP Testing Guide BOLA procedure</a> recommends altering object identifiers and verifying whether another user’s data or actions become available. For test planning, <a href="https://csrc.nist.gov/pubs/sp/800/115/final">NIST SP 800-115</a> provides a broader framework for scoping technical tests, collecting evidence, and turning findings into remediation work.</p>
+<h2>How RBAC, ABAC, GraphQL, and tenant controls affect BOLA tests</h2>
+<p>RBAC (Role-Based Access Control) answers whether a role may call a capability, such as whether a support agent may access a case-management endpoint. RBAC alone does not guarantee that the support agent may access <strong>every</strong> case returned by that endpoint.</p>
+<p>ABAC (Attribute-Based Access Control) evaluates contextual attributes such as object owner, tenant, project membership, region, classification, device posture, or relationship to the record. ABAC can express object-level policy more precisely, but Broken Object Level Authorization vulnerability identification must still prove that the policy is enforced consistently in each data-access path.</p>
+<p>Use these checks to avoid common blind spots:</p>
+<ul>
+<li><strong>RBAC check:</strong> use a lower-privilege token against an administrator-only operation. This primarily detects broken function-level authorization.</li>
+<li><strong>Object-ownership check:</strong> use a peer’s identifier with a role that is otherwise allowed to call the endpoint. This detects classic horizontal BOLA or IDOR.</li>
+<li><strong>ABAC check:</strong> change the project, subscription, region, sharing state, or account relationship while keeping the API action constant.</li>
+<li><strong>Tenant-isolation check:</strong> use a valid object ID from another tenant and verify that every retrieval, mutation, export, and indirect lookup denies access.</li>
+<li><strong>Lifecycle check:</strong> test newly created, transferred, archived, restored, and soft-deleted objects. Authorization bugs often appear when ownership or tenant attributes change.</li>
+</ul>
+<p>GraphQL resolvers authorization needs the same discipline. Do not assume authorization at the top-level query protects nested fields, <code>node(id: ...)</code> lookups, mutations, batch queries, or subscriptions. For GraphQL, test a legitimate query as User A, substitute User B’s global ID or nested relationship, and inspect every resolver path that returns or mutates an object. The <a href="https://cheatsheetseries.owasp.org/cheatsheets/GraphQL_Cheat_Sheet.html">OWASP GraphQL Cheat Sheet</a> specifically calls out broken authorization, including IDOR-style excessive access.</p>
+<h2>How to confirm, report, and fix a BOLA finding</h2>
+<p>A reliable finding contains a minimal, reproducible authorization bypass—not a claim based only on predictable IDs. UUIDs and opaque identifiers can make enumeration harder, but they do not replace an authorization decision.</p>
+<p>Document the finding with:</p>
+<ol>
+<li>The authorized test scope and environment.</li>
+<li>The two identities, roles, and tenant relationships used.</li>
+<li>A baseline request that legitimately accesses User A’s object.</li>
+<li>A minimally changed request that accesses or changes User B’s object.</li>
+<li>The observed response and any confirmed state change.</li>
+<li>The expected policy rule, such as “a user may update only documents owned by the same tenant and project.”</li>
+<li>The remediation location: middleware, service-layer policy, repository query predicate, resolver, worker, or storage authorization layer.</li>
+<li>A regression test that proves both the permitted and denied cases.</li>
+</ol>
+<p>The preferred fix is an enforceable server-side rule that binds the authenticated principal, object, action, and tenant context before data is returned or changed. Add regression tests for peer-object, cross-tenant, and privileged-object denials. Re-run the same paired API authorization tests / negative testing after deployment and after any change to sharing, migration, caching, or GraphQL resolver logic.</p>
+<h2>Sources &amp; references</h2>
+<ul>
+<li>[1] <a href="https://hubspot.wallarm.com/hubfs/Wallarm%20API%20ThreatStatTM%20Report-2026.pdf">hubspot.wallarm.com</a></li>
+<li>[2] <a href="https://www.edgescan.com/wp-content/uploads/2024/03/2022-Vulnerability-Statistic-Report.pdf">edgescan.com</a></li>
+<li>[3] <a href="https://arxiv.org/abs/2605.25865">arxiv.org</a></li>
+<li>[4] <a href="https://labs.apisec.ai/research/articles/bola-object-level-auth-analysis/">labs.apisec.ai</a></li>
+</ul>
+</article>
+</main>
+<footer class="art-foot mono">
+  <span>&copy; 2026 SAAD FELLAHI — tarpeg007</span>
+  <a href="https://tarpeg007.github.io/#contact">hire_me.sh</a>
+</footer>
+</body>
+</html>

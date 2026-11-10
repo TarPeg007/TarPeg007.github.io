@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How to Test OAuth/OIDC Security Step by Step</title>
+<meta name="description" content="Follow a practical OAuth/OIDC security testing workflow: validate PKCE, redirects, tokens, JWKS, API boundaries, negative cases, and capture evidence.">
+<link rel="canonical" href="https://tarpeg007.github.io/blog/test-oauthoidc-security-step-by-step/">
+<meta name="author" content="Saad Fellahi (tarpeg007)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to Test OAuth/OIDC Security Step by Step">
+<meta property="og:description" content="Follow a practical OAuth/OIDC security testing workflow: validate PKCE, redirects, tokens, JWKS, API boundaries, negative cases, and capture evidence.">
+<meta property="og:url" content="https://tarpeg007.github.io/blog/test-oauthoidc-security-step-by-step/">
+<meta property="og:site_name" content="tarpeg007 — offensive security">
+<meta property="og:image" content="https://tarpeg007.github.io/assets/composite_4k.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://tarpeg007.github.io/css/article.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "How to Test OAuth/OIDC Security Step by Step", "description": "Follow a practical OAuth/OIDC security testing workflow: validate PKCE, redirects, tokens, JWKS, API boundaries, negative cases, and capture evidence.", "inLanguage": "en", "datePublished": "2026-11-10", "dateModified": "2026-11-10", "author": {"@type": "Person", "name": "Saad Fellahi", "url": "https://tarpeg007.github.io/#about", "alternateName": "tarpeg007", "sameAs": ["https://github.com/TarPeg007", "https://hackerone.com/marshall-d-teach", "https://linkedin.com/in/saad-fellahi-83b948272"]}, "publisher": {"@type": "Person", "name": "Saad Fellahi", "url": "https://tarpeg007.github.io/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tarpeg007.github.io/blog/test-oauthoidc-security-step-by-step/"}, "isPartOf": {"@type": "WebSite", "name": "tarpeg007 — offensive security", "url": "https://tarpeg007.github.io/"}, "image": "https://tarpeg007.github.io/assets/composite_4k.jpg"}</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "en",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is PKCE enough to protect an OAuth authorization code flow?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. PKCE binds the authorization code to the client-generated verifier, but implementers must still validate redirect URIs, prevent login CSRF through state or an applicable OIDC nonce binding, validate tokens, and enforce authorization at each Resource Server."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Should a Resource Server accept an OIDC ID Token as a bearer token?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Usually no. An ID Token is an authentication assertion for the client and is not automatically an access token for an API. A Resource Server should enforce the token type and validate the issuer, intended audience, expiry, signature, and authorization claims required by its own API."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How should an implementer test redirect_uri validation?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Register a known callback, then submit controlled variants with changed scheme, host, subdomain, port, path, encoding, query parameters, and redirect chains. Each unregistered or unintended value should be rejected both at authorization time and, where applicable, at token exchange."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What should be fuzzed in OAuth and OIDC requests?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Fuzz authorization parameters such as client_id, response_type, scope, state, nonce, code_challenge, and redirect_uri; fuzz token parameters such as code, grant_type, code_verifier, and client authentication fields; and test malformed JWT headers and claims. Run these tests only against authorized test environments."
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="art-nav">
+  <a class="art-logo" href="https://tarpeg007.github.io/">[TarPeg<span>007</span>]</a>
+  <span class="art-path mono">~/writing/test-oauthoidc-security-step-by-step</span>
+  <a class="art-back mono" href="https://tarpeg007.github.io/blog/">all writing &middot; portfolio &rarr;</a>
+</header>
+<main>
+<article class="article">
+  <div class="art-meta mono">
+    <span class="art-tag">security-testing</span>
+    <span>by <a href="https://tarpeg007.github.io/#about">Saad Fellahi (tarpeg007)</a></span>
+    <time datetime="2026-11-10">Nov 10, 2026</time>
+  </div>
+  <h1>How to Test OAuth/OIDC Security Step by Step</h1>
+  <p>OAuth/OIDC security testing for implementers should replay a real Authorization Code Grant, then deliberately break every trust boundary: PKCE, state, redirect URIs, token exchange, discovery, JWT validation, and API authorization. Record requests and expected failures in a controlled environment, then automate the regressions before each release.</p>
+<p>Real-world measurements make this exercise worthwhile. In one analysis of 75 Google OAuth relying parties, <strong>30%</strong> were vulnerable to CSRF because the <code>state</code> parameter was absent[1]. A separate study of 100 public OAuth identity providers found that <strong>37%</strong> did not validate <code>redirect_uri</code> values[2]. These studies are not a prediction about a specific deployment; they are a reason to test protocol behavior rather than trust a framework default.</p>
+<h2>Build an OAuth/OIDC security testing for implementers baseline</h2>
+<p>OAuth/OIDC security testing for implementers starts by documenting the exact deployment under test. Do not treat “OAuth login” as one opaque feature: distinguish the <strong>OAuth 2.0 Authorization Code Grant</strong>, the authorization server, the relying-party client, and each resource server.</p>
+<ol>
+<li><strong>Create dedicated test identities and test clients.</strong> Use non-production accounts, a separate client registration, a narrow test scope, and a callback endpoint that records the complete request safely.</li>
+<li><strong>Map the trust boundaries.</strong> The <strong>Authorization Server vs Resource Server boundaries</strong> matter: the Authorization Server authenticates the user and issues tokens, while each Resource Server decides whether a presented access token authorizes a particular API action. Review the OAuth role definitions in <a href="https://www.rfc-editor.org/info/rfc6749/">RFC 6749</a>.</li>
+<li><strong>Capture one known-good browser flow.</strong> Save the authorization request, callback, token request, token response, and protected API request. Redact authorization codes, access tokens, refresh tokens, client secrets, and ID Tokens before putting evidence in tickets.</li>
+<li><strong>Set an expected-result ledger.</strong> For every negative case, write the expected HTTP status, OAuth error, log event, and proof that no token or protected resource was released.</li>
+<li><strong>Keep testing authorized and controlled.</strong> Traffic capture, including mitm-style inspection in controlled environments, is useful for confirming browser redirects and POST bodies. Use a test device or browser profile that you own, and install a trusted test certificate only where policy permits.</li>
+</ol>
+<p>A useful baseline is the <a href="https://datatracker.ietf.org/doc/html/rfc9700/">OAuth 2.0 Security Best Current Practice</a>: it calls for CSRF defenses, PKCE support, protections against authorization-code injection, and careful redirect handling.</p>
+<table style="border-collapse:collapse;width:100%;margin:1em 0;">
+<thead>
+<tr>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Test area</th>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Secure behavior to expect</th>
+<th style="border:1px solid #ddd;padding:8px;text-align:left;">Failure that should stop the release</th>
+</tr>
+</thead>
+<tbody><tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Authorization request</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Registered client, approved scopes, transaction binding</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Callback accepted without a valid transaction correlation</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">PKCE</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Unique verifier, <code>S256</code> challenge, verifier enforced at token endpoint</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Code exchange succeeds with a missing, altered, or replayed verifier</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Redirect handling</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Registered callback accepted exactly as intended</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Prefix, wildcard, path traversal, query manipulation, or foreign origin accepted</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">OIDC identity</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">ID Token validated against issuer, audience, signature, and nonce</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Token from another issuer, audience, key, or algorithm accepted</td>
+</tr>
+<tr>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Resource API</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Token limited to its intended audience, scope, and action</td>
+<td style="border:1px solid #ddd;padding:8px;text-align:left;">Token for API A successfully reads or changes API B data</td>
+</tr>
+</tbody></table>
+<h2>Test OAuth/OIDC security testing for implementers step by step</h2>
+<h3>1. Verify the Authorization Code Grant and state parameter</h3>
+<p>For the <strong>OAuth 2.0 Authorization Code Grant</strong>, begin with a successful login and retain a correlation ID for the transaction. Then test the callback endpoint directly.</p>
+<ul>
+<li>Remove the <code>state</code> parameter.</li>
+<li>Substitute a random <code>state</code> value.</li>
+<li>Reuse a previously valid <code>state</code> value after completing the original login.</li>
+<li>Start two browser sessions and swap their callback parameters.</li>
+<li>Alter the <code>code</code>, duplicate it, or deliver the callback twice.</li>
+</ul>
+<p>The <strong>state parameter (CSRF protection)</strong> must be high-entropy, one-time-use, and bound to the browser session and transaction. If the application uses OpenID Connect (OIDC), test the <code>nonce</code> as well: the returned ID Token must contain the value tied to that login attempt. A study of 395 high-ranked sites found that more than <strong>25%</strong> remained exploitable by at least one OAuth login-CSRF test strategy[3].</p>
+<h3>2. Test PKCE (RFC 7636) enforcement, not merely presence</h3>
+<p><strong>PKCE (RFC 7636)</strong> protects an authorization code from being redeemed by a party that lacks the original verifier. Test both client and server behavior:</p>
+<ol>
+<li>Begin authorization with <code>code_challenge_method=S256</code>.</li>
+<li>Exchange the returned code with the correct <code>code_verifier</code>; expect success.</li>
+<li>Repeat with no verifier, an altered verifier, and a verifier from another transaction; expect <code>invalid_grant</code> or an equivalent failure.</li>
+<li>Attempt a downgrade: send a verifier at the token endpoint for an authorization request that had no challenge. The Authorization Server must reject it.</li>
+<li>Attempt <code>plain</code> where the deployment expects <code>S256</code>; reject it according to your policy.</li>
+<li>Confirm that authorization codes are single-use and that a second exchange fails.</li>
+</ol>
+<p><a href="https://datatracker.ietf.org/doc/html/rfc7636">RFC 7636</a> specifies a verifier length of 43 to 128 characters and requires clients capable of <code>S256</code> to use it. More importantly for testing, the server must bind the authorization code to the original challenge—not simply accept PKCE-shaped parameters.</p>
+<h3>3. Probe redirect_uri exact matching and open redirects</h3>
+<p><strong>redirect_uri exact matching</strong> is a high-value negative test because callback weaknesses can turn a valid authorization response into code or token leakage.</p>
+<p>Test the registered callback against variants such as:</p>
+<ul>
+<li>Different scheme: <code>http</code> instead of <code>https</code>.</li>
+<li>Different host, subdomain, port, path case, trailing slash, or encoded path separator.</li>
+<li>Additional query parameters and fragments.</li>
+<li>Look-alike hostnames such as <code>client.example.evil.test</code>.</li>
+<li>A callback path that performs an internal open redirect.</li>
+<li>A token exchange request with a <code>redirect_uri</code> different from the authorization request.</li>
+</ul>
+<p>The expected result is rejection unless a variant is explicitly registered and intended. Avoid broad wildcard callback patterns for browser-based clients. The <a href="https://cheatsheetseries.owasp.org/cheatsheets/OAuth2_Cheat_Sheet.html">OWASP OAuth 2.0 Cheat Sheet</a> also recommends preventing arbitrary browser forwarding and requiring Resource Servers to enforce token-to-resource authorization.</p>
+<h3>4. Validate OIDC discovery, JWKS, and JWTs as separate controls</h3>
+<p><strong>OpenID Connect (OIDC) Core</strong> adds identity assertions to OAuth. OAuth/OIDC security testing for implementers should test discovery and token validation independently because a correct signature check alone does not prove that a token belongs to the current client or issuer.</p>
+<p>For <strong>OIDC discovery and JWKS</strong>:</p>
+<ol>
+<li>Fetch <code>/.well-known/openid-configuration</code> only from the configured issuer over HTTPS.</li>
+<li>Verify that the metadata issuer exactly matches the issuer you configured; do not silently follow an issuer change.</li>
+<li>Confirm that <code>authorization_endpoint</code>, <code>token_endpoint</code>, and <code>jwks_uri</code> come from trusted metadata, not from browser-controlled parameters.</li>
+<li>Rotate a signing key in the test environment and verify that cached JWKS data refreshes safely when a new known <code>kid</code> appears.</li>
+<li>Reject unexpected key sources such as a token-supplied <code>jku</code> or <code>x5u</code> URL unless the deployment has an explicitly designed, verified trust model.</li>
+</ol>
+<p>For <strong>JWT validation (iss/aud/signature alg allowlist)</strong>:</p>
+<ul>
+<li>Require an exact <code>iss</code> match.</li>
+<li>Require the intended client ID or API identifier in <code>aud</code>; validate <code>azp</code> where the OIDC profile requires it.</li>
+<li>Verify the signature with a trusted JWKS key that matches the expected algorithm.</li>
+<li>Configure an algorithm allowlist, such as <code>RS256</code> or <code>ES256</code> where appropriate; never select an algorithm solely because an untrusted JWT header requests it.</li>
+<li>Validate time-based claims (<code>exp</code>, <code>nbf</code>, and <code>iat</code>) with a small documented clock-skew allowance.</li>
+<li>For an OIDC login, verify <code>nonce</code>, and verify the authorization-response binding requirements used by the application.</li>
+</ul>
+<p><a href="https://openid.net/specs/openid-connect-core-1_0-22.html">OpenID Connect Core</a> requires ID Token signature validation and defines the <code>iss</code>, <code>aud</code>, and <code>nonce</code> claims used in these checks. In a survey of 137 sites using Google Sign-In, <strong>69</strong> had at least one serious OAuth 2.0 or OIDC security or privacy vulnerability[4].</p>
+<h3>5. Enforce Authorization Server and Resource Server boundaries</h3>
+<p>OAuth/OIDC security testing for implementers must test the API separately from login. A valid login does not automatically make a token valid for every API.</p>
+<p>Run these tests at every Resource Server:</p>
+<ul>
+<li>Present an access token minted for a different API audience.</li>
+<li>Reduce or remove a required scope, then call a sensitive route.</li>
+<li>Use a token belonging to User A to access User B’s object identifier.</li>
+<li>Try an ID Token as an API bearer token; the Resource Server should reject it unless the architecture explicitly defines that profile.</li>
+<li>Try an opaque token where a JWT is expected, and a JWT where introspection is required.</li>
+<li>Revoke or expire a token and confirm that the Resource Server stops accepting it according to the deployment’s validation or introspection model.</li>
+</ul>
+<p>When an Authorization Server issues JWT access tokens, Resource Servers should validate them locally against the intended issuer, audience, signature, algorithm policy, expiry, and authorization claims. When an Authorization Server issues opaque tokens, Resource Servers should use the approved introspection or gateway path rather than guessing at token contents.</p>
+<h3>6. Use negative testing and fuzzing of parameters</h3>
+<p><strong>Negative testing and fuzzing of parameters</strong> should be structured, rate-limited, and repeatable. Start with a single mutation per request so that a failure is explainable, then combine mutations after individual controls are proven.</p>
+<p>Prioritize these inputs:</p>
+<ul>
+<li><code>client_id</code>, <code>response_type</code>, <code>scope</code>, <code>state</code>, <code>nonce</code>, <code>code_challenge</code>, and <code>code_challenge_method</code> at the authorization endpoint.</li>
+<li><code>grant_type</code>, <code>code</code>, <code>redirect_uri</code>, <code>client_assertion</code>, and <code>code_verifier</code> at the token endpoint.</li>
+<li>Duplicate parameters, missing parameters, empty values, percent encoding, Unicode normalization, extremely long values, repeated keys, and mixed query/body copies.</li>
+<li>JWT header fields including <code>alg</code>, <code>kid</code>, <code>typ</code>, <code>jku</code>, and <code>x5u</code>.</li>
+</ul>
+<p>Success criteria are explicit: reject malformed or unauthorized input, avoid verbose error disclosure, issue no credential, create an audit event without secrets, and remain available. Tools such as Burp Suite and OWASP ZAP can help mutate requests and replay controlled flows; protocol-aware automated tests remain necessary to check transaction binding across multiple steps.</p>
+<h2>Turn OAuth/OIDC security testing for implementers into release gates</h2>
+<p>OAuth/OIDC security testing for implementers is most effective when every confirmed negative test becomes a regression test. A practical release gate includes:</p>
+<ol>
+<li>A passing Authorization Code Grant with PKCE and scoped access.</li>
+<li>Rejection of missing, altered, reused, and cross-session <code>state</code> values.</li>
+<li>Rejection of altered, missing, reused, and downgraded PKCE verifiers.</li>
+<li>Exact callback validation, including rejection of open-redirect chains.</li>
+<li>OIDC discovery issuer verification and safe JWKS refresh behavior.</li>
+<li>JWT rejection tests for wrong issuer, audience, key, signature, algorithm, expiry, and nonce.</li>
+<li>Resource Server tests for wrong audience, insufficient scope, revoked tokens, and cross-user object access.</li>
+<li>Redacted traffic evidence and logs demonstrating expected failures.</li>
+</ol>
+<p>Keep the resulting test cases close to the implementation. A framework upgrade, identity-provider change, new callback domain, gateway migration, or new mobile client can change the security properties of the same nominal OAuth/OIDC flow.</p>
+<h2>Sources &amp; references</h2>
+<ul>
+<li>[1] <a href="https://ieeexplore.ieee.org/abstract/document/10434479">ieeexplore.ieee.org</a></li>
+<li>[2] <a href="https://elib.uni-stuttgart.de/server/api/core/bitstreams/4b3e0054-6a15-41c5-9693-e9542305ebd5/content">elib.uni-stuttgart.de</a></li>
+<li>[3] <a href="https://www.sciencedirect.com/science/article/pii/S016740482200253X">sciencedirect.com</a></li>
+<li>[4] <a href="https://arxiv.org/abs/1901.08960">arxiv.org</a></li>
+</ul>
+</article>
+</main>
+<footer class="art-foot mono">
+  <span>&copy; 2026 SAAD FELLAHI — tarpeg007</span>
+  <a href="https://tarpeg007.github.io/#contact">hire_me.sh</a>
+</footer>
+</body>
+</html>
